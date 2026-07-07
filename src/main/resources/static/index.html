@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>AI Log Monitor</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>AI Log Monitor</h1>
+
+        <button id="refreshBtn">Refresh</button>
+
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h3>Total Logs</h3>
+
+            <p id="totalLogs">0</p>
+
+        </div>
+
+        <div class="card error">
+
+            <h3>Errors</h3>
+
+            <p id="errorCount">0</p>
+
+        </div>
+
+        <div class="card warn">
+
+            <h3>Warnings</h3>
+
+            <p id="warnCount">0</p>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Last Analysis</h3>
+
+            <p id="lastAnalysis">-</p>
+
+        </div>
+        <div class="toolbar">
+
+            <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search logs...">
+            <select id="severityFilter">
+
+                <option value="ALL">All</option>
+                <option value="ERROR">ERROR</option>
+                <option value="WARN">WARN</option>
+
+            </select>
+        </div>
+
+    </div>
+
+    <h2>Recent Analyses</h2>
+
+    <div id="recentLogs">
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

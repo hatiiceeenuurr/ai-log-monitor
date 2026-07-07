@@ -1,0 +1,10 @@
+2026-07-03 10:15:11 INFO User login successful
+
+2026-07-03 10:16:40 ERROR Database connection failed
+
+2026-07-03 10:17:00 WARN Memory usage is high
+
+2026-07-03 10:18:20 ERROR NullPointerException in UserService
+
+2026-07-03 10:19:55 INFO Request completed
+2026-07-06 16:45:00 ERROR Redis connection lost

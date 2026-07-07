@@ -1,0 +1,184 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #f4f6f9;
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 1400px;
+    margin: 40px auto;
+}
+
+h1 {
+    margin-bottom: 30px;
+    color: #222;
+}
+
+.cards {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.card {
+    flex: 1;
+    min-width: 220px;
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.card h3 {
+    color: gray;
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 34px;
+    font-weight: bold;
+}
+
+.error {
+    border-left: 8px solid #e74c3c;
+}
+
+.warn {
+    border-left: 8px solid #f1c40f;
+}
+
+#recentLogs{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.log-card{
+
+    background:white;
+    border-radius:12px;
+    padding:20px;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+
+}
+
+.log-card h3{
+
+    color:#e74c3c;
+    margin-bottom:15px;
+
+}
+
+.log-card p{
+
+    margin-bottom:10px;
+    line-height:1.6;
+
+}
+
+.label{
+
+    font-weight:bold;
+
+}
+.header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+}
+
+#refreshBtn{
+
+    background:#3498db;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 25px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+}
+
+#refreshBtn:hover{
+
+    background:#2980b9;
+
+}
+
+.toolbar{
+
+    margin-bottom:25px;
+
+}
+
+#searchInput{
+
+    width:100%;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    border:1px solid #ccc;
+
+    font-size:16px;
+
+}
+.toolbar{
+
+    display:flex;
+
+    gap:15px;
+
+    margin-bottom:25px;
+
+}
+
+#searchInput{
+
+    flex:1;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    border:1px solid #ccc;
+
+    font-size:16px;
+
+}
+
+#severityFilter{
+
+    width:180px;
+
+    border-radius:10px;
+
+    border:1px solid #ccc;
+
+    font-size:16px;
+
+    padding:15px;
+
+}

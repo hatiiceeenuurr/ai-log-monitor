@@ -1,5 +1,6 @@
 package com.teknokent.ailogmonitor.model;
 
+/*log deneme commit*/
 public class LogEntry {
 
     private final String content;

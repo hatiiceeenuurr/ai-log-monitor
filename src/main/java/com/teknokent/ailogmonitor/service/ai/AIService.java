@@ -20,8 +20,7 @@ public class AIService {
     private String apiUrl;
 
     private final RestClient restClient = RestClient.create();
-
-    public String analyzeLog(String log) {
+ public String askAI(String prompt){
 
         AIRequest request = new AIRequest();
 
@@ -29,29 +28,13 @@ public class AIService {
         request.setMax_tokens(500);
         request.setTemperature(0.2);
 
-        request.setMessages(List.of(
-                new AIRequest.Message(
-                        "user",
-                        """
-                        You are a senior DevOps and Java engineer.
+     request.setMessages(List.of(
+             new AIRequest.Message(
+                     "user",
+                     prompt
+             )
+     ));
 
-                        Analyze the following application log.
-
-                        Return ONLY the following format.
-
-                        Problem:
-                        <problem>
-
-                        Cause:
-                        <cause>
-
-                        Solution:
-                        <solution>
-
-                        Log:
-                        """ + log
-                )
-        ));
 
         OpenRouterResponse response = restClient.post()
                 .uri(apiUrl)

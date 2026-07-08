@@ -37,7 +37,7 @@ public class RagService {
         String prompt =
                 promptBuilder.buildPrompt(currentLog, context);
 
-        return aiService.analyzeLog(prompt);
+        return aiService.askAI(prompt);
     }
 
 }

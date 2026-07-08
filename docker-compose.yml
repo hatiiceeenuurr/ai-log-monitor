@@ -1,0 +1,24 @@
+services:
+
+  postgres:
+
+    image: pgvector/pgvector:pg17
+
+    container_name: ai-log-monitor-db
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ai_log_monitor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:

@@ -1,6 +1,6 @@
 package com.teknokent.ailogmonitor.service.log;
 
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -11,29 +11,16 @@ import java.util.List;
 @Service
 public class LogReaderService {
 
-    private final Path logFile;
-
-    private int lastReadLine = 0;
-
-    public LogReaderService() throws IOException {
-        this.logFile = new ClassPathResource("logs/application.log")
-                .getFile()
-                .toPath();
-    }
+    @Value("${log.file.path}")
+    private String logFilePath;
 
     public List<String> readLogs() throws IOException {
 
-        List<String> allLines = Files.readAllLines(logFile);
+        return Files.readAllLines(
+                Path.of(logFilePath)
+        );
 
-        if (lastReadLine >= allLines.size()) {
-            return List.of();
-        }
-
-        List<String> newLogs = allLines.subList(lastReadLine, allLines.size());
-
-        lastReadLine = allLines.size();
-
-        return newLogs;
     }
+
 }
 

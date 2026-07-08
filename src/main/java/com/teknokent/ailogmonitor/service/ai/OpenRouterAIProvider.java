@@ -11,7 +11,7 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 
 @Service
-public class AIService {
+public class OpenRouterAIProvider implements AIProvider {
 
     @Value("${openrouter.api.key}")
     private String apiKey;
@@ -20,7 +20,9 @@ public class AIService {
     private String apiUrl;
 
     private final RestClient restClient = RestClient.create();
- public String askAI(String prompt){
+
+    @Override
+    public String analyze(String prompt) {
 
         AIRequest request = new AIRequest();
 
@@ -28,13 +30,12 @@ public class AIService {
         request.setMax_tokens(500);
         request.setTemperature(0.2);
 
-     request.setMessages(List.of(
-             new AIRequest.Message(
-                     "user",
-                     prompt
-             )
-     ));
-
+        request.setMessages(List.of(
+                new AIRequest.Message(
+                        "user",
+                        prompt
+                )
+        ));
 
         OpenRouterResponse response = restClient.post()
                 .uri(apiUrl)

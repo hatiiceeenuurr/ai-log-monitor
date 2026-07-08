@@ -2,7 +2,7 @@ package com.teknokent.ailogmonitor.service.rag;
 
 import com.teknokent.ailogmonitor.entity.LogAnalysis;
 import com.teknokent.ailogmonitor.repository.LogAnalysisRepository;
-import com.teknokent.ailogmonitor.service.ai.AIService;
+import com.teknokent.ailogmonitor.service.ai.AIProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,17 +10,17 @@ import java.util.List;
 @Service
 public class RagService {
 
-    private final AIService aiService;
+    private final AIProvider aiProvider;
     private final LogAnalysisRepository repository;
     private final ContextBuilder contextBuilder;
     private final PromptBuilder promptBuilder;
 
-    public RagService(AIService aiService,
+    public RagService(AIProvider aiProvider,
                       LogAnalysisRepository repository,
                       ContextBuilder contextBuilder,
                       PromptBuilder promptBuilder) {
 
-        this.aiService = aiService;
+        this.aiProvider = aiProvider;
         this.repository = repository;
         this.contextBuilder = contextBuilder;
         this.promptBuilder = promptBuilder;
@@ -37,7 +37,6 @@ public class RagService {
         String prompt =
                 promptBuilder.buildPrompt(currentLog, context);
 
-        return aiService.askAI(prompt);
+        return aiProvider.analyze(prompt);
     }
-
 }

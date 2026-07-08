@@ -5,8 +5,9 @@ import com.teknokent.ailogmonitor.dto.LogAnalysisResult;
 import com.teknokent.ailogmonitor.entity.LogAnalysis;
 import com.teknokent.ailogmonitor.entity.Scan;
 import com.teknokent.ailogmonitor.repository.LogAnalysisRepository;
+import com.teknokent.ailogmonitor.service.embedding.EmbeddingStorageService;
 import org.springframework.stereotype.Service;
-
+import com.teknokent.ailogmonitor.service.embedding.EmbeddingStorageService;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,9 +15,13 @@ import java.util.List;
 public class ReportService {
 
     private final LogAnalysisRepository repository;
+    private final EmbeddingStorageService embeddingStorageService;
 
-    public ReportService(LogAnalysisRepository repository) {
+    public ReportService(LogAnalysisRepository repository,
+                         EmbeddingStorageService embeddingStorageService) {
+
         this.repository = repository;
+        this.embeddingStorageService = embeddingStorageService;
     }
 
     public LogAnalysisResult parseAIResponse(String response) {
@@ -90,8 +95,20 @@ public class ReportService {
         analysis.setSolution(result.getSolution());
         analysis.setAnalyzedAt(LocalDateTime.now());
 
-        return repository.save(analysis);
+        LogAnalysis savedAnalysis = repository.save(analysis);
 
+        // Embedding'i oluşturup pgvector tablosuna kaydet
+        try {
+
+            embeddingStorageService.saveEmbedding(savedAnalysis);
+
+        } catch (Exception e) {
+
+            System.out.println("Embedding oluşturulamadı: " + e.getMessage());
+
+        }
+
+        return savedAnalysis;
     }
 
     public long getTotalLogs() {
@@ -115,11 +132,12 @@ public class ReportService {
                 .orElse(null);
     }
 
-    public java.util.List<LogAnalysis> getRecentLogs() {
+    public List<LogAnalysis> getRecentLogs() {
 
         return repository.findTop5ByOrderByAnalyzedAtDesc();
 
     }
+
     public List<DailyAnalysisDTO> getDailyAnalysis() {
 
         return repository.getDailyAnalysisCounts()

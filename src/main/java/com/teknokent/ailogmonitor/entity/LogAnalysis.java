@@ -1,7 +1,7 @@
 package com.teknokent.ailogmonitor.entity;
 
 import jakarta.persistence.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,6 +31,7 @@ public class LogAnalysis {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "scan_id")
+    @JsonIgnore
     private Scan scan;
 
     public LogAnalysis() {

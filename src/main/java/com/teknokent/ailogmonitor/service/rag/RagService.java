@@ -1,8 +1,8 @@
 package com.teknokent.ailogmonitor.service.rag;
 
-import com.teknokent.ailogmonitor.entity.LogAnalysis;
-import com.teknokent.ailogmonitor.repository.LogAnalysisRepository;
+import com.teknokent.ailogmonitor.dto.SimilarLogResult;
 import com.teknokent.ailogmonitor.service.ai.AIProvider;
+import com.teknokent.ailogmonitor.service.embedding.EmbeddingSearchService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,28 +11,28 @@ import java.util.List;
 public class RagService {
 
     private final AIProvider aiProvider;
-    private final LogAnalysisRepository repository;
+    private final EmbeddingSearchService embeddingSearchService;
     private final ContextBuilder contextBuilder;
     private final PromptBuilder promptBuilder;
 
     public RagService(AIProvider aiProvider,
-                      LogAnalysisRepository repository,
+                      EmbeddingSearchService embeddingSearchService,
                       ContextBuilder contextBuilder,
                       PromptBuilder promptBuilder) {
 
         this.aiProvider = aiProvider;
-        this.repository = repository;
+        this.embeddingSearchService = embeddingSearchService;
         this.contextBuilder = contextBuilder;
         this.promptBuilder = promptBuilder;
     }
 
     public String analyze(String currentLog) {
 
-        List<LogAnalysis> previousAnalyses =
-                repository.findTop5ByOrderByAnalyzedAtDesc();
+        List<SimilarLogResult> previousAnalyses =
+                embeddingSearchService.findSimilarLogsWithScore(currentLog);
 
         String context =
-                contextBuilder.buildContext(previousAnalyses);
+                contextBuilder.buildContextWithSimilarity(previousAnalyses);
 
         String prompt =
                 promptBuilder.buildPrompt(currentLog, context);

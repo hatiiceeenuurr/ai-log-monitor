@@ -10,18 +10,26 @@ import org.springframework.stereotype.Service;
 import com.teknokent.ailogmonitor.service.embedding.EmbeddingStorageService;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.teknokent.ailogmonitor.service.priority.PriorityService;
+import com.teknokent.ailogmonitor.service.notification.NotificationService;
 
 @Service
 public class ReportService {
 
     private final LogAnalysisRepository repository;
     private final EmbeddingStorageService embeddingStorageService;
+    private final PriorityService priorityService;
+    private final NotificationService notificationService;
 
     public ReportService(LogAnalysisRepository repository,
-                         EmbeddingStorageService embeddingStorageService) {
+                         EmbeddingStorageService embeddingStorageService,
+                         PriorityService priorityService,
+                         NotificationService notificationService) {
 
         this.repository = repository;
         this.embeddingStorageService = embeddingStorageService;
+        this.priorityService = priorityService;
+        this.notificationService = notificationService;
     }
 
     public LogAnalysisResult parseAIResponse(String response) {
@@ -94,10 +102,16 @@ public class ReportService {
         analysis.setCause(result.getCause());
         analysis.setSolution(result.getSolution());
         analysis.setAnalyzedAt(LocalDateTime.now());
-
+        analysis.setPriority(
+                priorityService.determinePriority(
+                        severity,
+                        result.getProblem(),
+                        log
+                )
+        );
         LogAnalysis savedAnalysis = repository.save(analysis);
 
-        // Embedding'i oluşturup pgvector tablosuna kaydet
+// Embedding oluştur
         try {
 
             embeddingStorageService.saveEmbedding(savedAnalysis);
@@ -108,7 +122,19 @@ public class ReportService {
 
         }
 
+// Notification gönder
+        try {
+
+            notificationService.notify(savedAnalysis);
+
+        } catch (Exception e) {
+
+            System.out.println("Notification gönderilemedi: " + e.getMessage());
+
+        }
+
         return savedAnalysis;
+
     }
 
     public long getTotalLogs() {

@@ -3,7 +3,7 @@ package com.teknokent.ailogmonitor.entity;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
-
+import com.teknokent.ailogmonitor.priority.Priority;
 @Entity
 @Table(name = "log_analysis")
 public class LogAnalysis {
@@ -33,6 +33,9 @@ public class LogAnalysis {
     @JoinColumn(name = "scan_id")
     @JsonIgnore
     private Scan scan;
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Priority priority;
 
     public LogAnalysis() {
     }
@@ -96,4 +99,13 @@ public class LogAnalysis {
     public void setScan(Scan scan) {
         this.scan = scan;
     }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
 }

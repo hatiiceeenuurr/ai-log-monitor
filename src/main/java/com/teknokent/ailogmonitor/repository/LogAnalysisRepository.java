@@ -4,6 +4,7 @@ import com.teknokent.ailogmonitor.entity.LogAnalysis;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LogAnalysisRepository
@@ -22,5 +23,5 @@ public interface LogAnalysisRepository
             ORDER BY FUNCTION('DATE', l.analyzedAt)
             """)
     List<Object[]> getDailyAnalysisCounts();
-
+    void deleteByAnalyzedAtBefore(LocalDateTime dateTime);
 }

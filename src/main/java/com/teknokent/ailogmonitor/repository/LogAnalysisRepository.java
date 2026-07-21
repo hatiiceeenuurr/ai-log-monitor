@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface LogAnalysisRepository
         extends JpaRepository<LogAnalysis, Long> {
@@ -13,6 +14,11 @@ public interface LogAnalysisRepository
     long countBySeverity(String severity);
 
     List<LogAnalysis> findTop5ByOrderByAnalyzedAtDesc();
+
+    Optional<LogAnalysis> findFirstByLogContentOrderByAnalyzedAtDesc(String logContent);
+
+    // Aynı fiziksel log satırı daha önce işlendi mi?
+    boolean existsByLogContent(String logContent);
 
     @Query("""
             SELECT
@@ -23,5 +29,6 @@ public interface LogAnalysisRepository
             ORDER BY FUNCTION('DATE', l.analyzedAt)
             """)
     List<Object[]> getDailyAnalysisCounts();
+
     void deleteByAnalyzedAtBefore(LocalDateTime dateTime);
 }

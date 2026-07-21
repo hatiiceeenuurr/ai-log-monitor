@@ -1,10 +1,10 @@
 package com.teknokent.ailogmonitor.service.embedding;
 
 import com.teknokent.ailogmonitor.dto.SimilarLogResult;
-import com.teknokent.ailogmonitor.entity.LogAnalysis;
 import com.teknokent.ailogmonitor.entity.LogEmbedding;
-import com.teknokent.ailogmonitor.repository.LogEmbeddingRepository;
 import jakarta.persistence.EntityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,24 +13,25 @@ import java.util.List;
 @Service
 public class EmbeddingSearchService {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(EmbeddingSearchService.class);
+
     private final EmbeddingService embeddingService;
-    private final LogEmbeddingRepository repository;
     private final EntityManager entityManager;
 
     public EmbeddingSearchService(
             EmbeddingService embeddingService,
-            LogEmbeddingRepository repository,
             EntityManager entityManager) {
 
         this.embeddingService = embeddingService;
-        this.repository = repository;
         this.entityManager = entityManager;
     }
 
-    public List<LogAnalysis> findSimilarLogs(String currentLog) {
+    public List<SimilarLogResult> findSimilarLogs(String currentLog) {
 
         List<Float> embedding =
                 embeddingService.createEmbedding(currentLog);
+        log.info("Searching for log: {}", currentLog);
 
         float[] queryVector = new float[embedding.size()];
 
@@ -38,37 +39,75 @@ public class EmbeddingSearchService {
             queryVector[i] = embedding.get(i);
         }
 
-        List<LogEmbedding> results =
+        List<Object[]> rows =
                 entityManager.createQuery("""
-                        FROM LogEmbedding
-                        ORDER BY cosine_distance(embedding, :embedding)
-                        """, LogEmbedding.class)
+                        SELECT le,
+                               cosine_distance(le.embedding, :embedding)
+                        FROM LogEmbedding le
+                        ORDER BY cosine_distance(le.embedding, :embedding)
+                        """, Object[].class)
                         .setParameter("embedding", queryVector)
-                        .setMaxResults(5)
+                        .setMaxResults(6)
                         .getResultList();
-
-        return results.stream()
-                .map(LogEmbedding::getLogAnalysis)
-                .toList();
-    }
-
-    public List<SimilarLogResult> findSimilarLogsWithScore(String currentLog) {
-
-        List<LogAnalysis> analyses = findSimilarLogs(currentLog);
+        log.info("Candidate rows from database: {}", rows.size());
 
         List<SimilarLogResult> results = new ArrayList<>();
 
-        for (LogAnalysis analysis : analyses) {
+        for (Object[] row : rows) {
+
+            LogEmbedding embeddingResult = (LogEmbedding) row[0];
+
+            log.info("Candidate ID: {}", embeddingResult.getLogAnalysis().getId());
+            log.info("Candidate Log: {}", embeddingResult.getLogAnalysis().getLogContent());
+            log.info("Current Log: {}", currentLog);
+            // Aynı logu RAG sonucuna ekleme
+          /*  if (embeddingResult.getLogAnalysis()
+                    .getId()
+                    .equals(currentAnalysisId))
+                {
+                    log.info(">>> SAME LOG - SKIPPED");
+                continue;
+            }*/
+
+            double distance = ((Number) row[1]).doubleValue();
+
+            double similarity = (1.0 - distance) * 100.0;
+
+            similarity = Math.max(0.0,
+                    Math.min(100.0, similarity));
+
+            log.debug(
+                    "LogId={} Similarity={} Distance={}",
+                    embeddingResult.getLogAnalysis().getId(),
+                    String.format("%.2f", similarity),
+                    String.format("%.4f", distance)
+            );
 
             results.add(
                     new SimilarLogResult(
-                            analysis,
-                            100.0
+                            embeddingResult.getLogAnalysis(),
+                            similarity,
+                            distance
                     )
+            );
+
+            // En fazla 5 farklı log döndür
+            if (results.size() == 5) {
+                break;
+            }
+        }
+
+        log.info("EmbeddingSearchService returned {} results.", results.size());
+
+        for (SimilarLogResult result : results) {
+            log.info(
+                    "Similarity={} Distance={} Log={}",
+                    String.format("%.2f", result.getSimilarity()),
+                    String.format("%.4f", result.getDistance()),
+                    result.getAnalysis().getLogContent()
             );
         }
 
         return results;
     }
 }
-

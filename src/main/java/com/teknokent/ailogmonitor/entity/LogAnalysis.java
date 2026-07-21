@@ -27,6 +27,9 @@ public class LogAnalysis {
     @Column(columnDefinition = "TEXT")
     private String solution;
 
+    @Column(columnDefinition = "TEXT")
+    private String normalizedMessage;
+
     private LocalDateTime analyzedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -82,6 +85,14 @@ public class LogAnalysis {
 
     public void setSolution(String solution) {
         this.solution = solution;
+    }
+
+    public String getNormalizedMessage() {
+        return normalizedMessage;
+    }
+
+    public void setNormalizedMessage(String normalizedMessage) {
+        this.normalizedMessage = normalizedMessage;
     }
 
     public LocalDateTime getAnalyzedAt() {

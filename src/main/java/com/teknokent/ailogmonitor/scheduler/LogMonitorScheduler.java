@@ -8,6 +8,8 @@ import com.teknokent.ailogmonitor.service.parser.LogParserService;
 import com.teknokent.ailogmonitor.service.rag.RagService;
 import com.teknokent.ailogmonitor.service.report.ReportService;
 import com.teknokent.ailogmonitor.service.scan.ScanService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,9 @@ import java.util.List;
 
 @Component
 public class LogMonitorScheduler {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(LogMonitorScheduler.class);
 
     private final LogReaderService logReaderService;
     private final LogParserService logParserService;
@@ -40,7 +45,6 @@ public class LogMonitorScheduler {
     public void analyzeLogs() throws IOException {
 
         List<String> logs = logReaderService.readLogs();
-
         List<LogEntry> logEntries = logParserService.parseLogs(logs);
 
         Scan scan = scanService.startScan(logs.size());
@@ -49,6 +53,10 @@ public class LogMonitorScheduler {
         int warnCount = 0;
 
         for (LogEntry entry : logEntries) {
+            if (reportService.isAlreadyProcessed(entry.getContent())) {
+                log.debug("Log already processed. Skipping: {}", entry.getContent());
+                continue;
+            }
 
             if (entry.getSeverity() == Severity.ERROR) {
                 errorCount++;
@@ -56,14 +64,23 @@ public class LogMonitorScheduler {
                 warnCount++;
             }
 
-            String aiResponse = ragService.analyze(entry.getContent());
+            try {
 
-            reportService.saveAnalysis(
-                    scan,
-                    entry.getContent(),
-                    entry.getSeverity().name(),
-                    aiResponse
-            );
+                log.info("Analyzing log: {}", entry.getContent());
+
+                String aiResponse = ragService.analyze(entry.getContent());
+
+                reportService.saveAnalysis(
+                        scan,
+                        entry.getContent(),
+                        entry.getSeverity().name(),
+                        aiResponse
+                );
+
+            } catch (Exception e) {
+
+                log.error("Failed to analyze log: {}", entry.getContent(), e);
+            }
         }
 
         scanService.completeScan(
@@ -72,6 +89,6 @@ public class LogMonitorScheduler {
                 warnCount
         );
 
-        System.out.println("Scan completed successfully.");
+        log.info("Scan completed successfully.");
     }
 }

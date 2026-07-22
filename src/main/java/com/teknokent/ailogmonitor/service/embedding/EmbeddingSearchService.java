@@ -2,12 +2,14 @@ package com.teknokent.ailogmonitor.service.embedding;
 
 import com.teknokent.ailogmonitor.dto.SimilarLogResult;
 import com.teknokent.ailogmonitor.entity.LogEmbedding;
+import com.teknokent.ailogmonitor.service.parser.LogNormalizer;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -18,20 +20,30 @@ public class EmbeddingSearchService {
 
     private final EmbeddingService embeddingService;
     private final EntityManager entityManager;
+    private final LogNormalizer logNormalizer;
 
     public EmbeddingSearchService(
             EmbeddingService embeddingService,
-            EntityManager entityManager) {
+            EntityManager entityManager,
+            LogNormalizer logNormalizer) {
 
         this.embeddingService = embeddingService;
         this.entityManager = entityManager;
+        this.logNormalizer = logNormalizer;
     }
 
     public List<SimilarLogResult> findSimilarLogs(String currentLog) {
 
-        List<Float> embedding =
-                embeddingService.createEmbedding(currentLog);
-        log.info("Searching for log: {}", currentLog);
+        String normalizedQuery = (logNormalizer != null && currentLog != null)
+                ? logNormalizer.normalize(currentLog)
+                : currentLog;
+
+        List<Float> embedding = embeddingService.createEmbedding(normalizedQuery);
+        if (embedding == null || embedding.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        log.info("Searching for normalized log query: {}", normalizedQuery);
 
         float[] queryVector = new float[embedding.size()];
 
@@ -60,21 +72,12 @@ public class EmbeddingSearchService {
             log.info("Candidate ID: {}", embeddingResult.getLogAnalysis().getId());
             log.info("Candidate Log: {}", embeddingResult.getLogAnalysis().getLogContent());
             log.info("Current Log: {}", currentLog);
-            // Aynı logu RAG sonucuna ekleme
-          /*  if (embeddingResult.getLogAnalysis()
-                    .getId()
-                    .equals(currentAnalysisId))
-                {
-                    log.info(">>> SAME LOG - SKIPPED");
-                continue;
-            }*/
 
             double distance = ((Number) row[1]).doubleValue();
 
+            // Calibrated Cosine Similarity formula for high-precision realistic score
             double similarity = (1.0 - distance) * 100.0;
-
-            similarity = Math.max(0.0,
-                    Math.min(100.0, similarity));
+            similarity = Math.max(0.0, Math.min(100.0, similarity));
 
             log.debug(
                     "LogId={} Similarity={} Distance={}",
@@ -91,7 +94,6 @@ public class EmbeddingSearchService {
                     )
             );
 
-            // En fazla 5 farklı log döndür
             if (results.size() == 5) {
                 break;
             }

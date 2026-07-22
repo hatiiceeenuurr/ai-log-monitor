@@ -9,27 +9,29 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
 
     private final SlackNotificationService slackNotificationService;
+    private final SseNotificationService sseNotificationService;
 
     @Value("${notification.enabled:true}")
     private boolean notificationEnabled;
 
     public NotificationService(
-            SlackNotificationService slackNotificationService) {
+            SlackNotificationService slackNotificationService,
+            SseNotificationService sseNotificationService) {
 
         this.slackNotificationService = slackNotificationService;
+        this.sseNotificationService = sseNotificationService;
     }
 
     public void notify(LogAnalysis analysis) {
+        // Broadcast SSE live event to connected frontend clients
+        sseNotificationService.emit(analysis);
 
         if (!notificationEnabled) {
             return;
         }
 
         if (analysis.getPriority() == Priority.CRITICAL) {
-
             slackNotificationService.send(analysis);
-
         }
     }
-
 }

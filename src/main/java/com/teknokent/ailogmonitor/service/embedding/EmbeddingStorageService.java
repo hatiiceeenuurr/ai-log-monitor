@@ -28,17 +28,22 @@ public class EmbeddingStorageService {
 
     public void saveEmbedding(LogAnalysis analysis) {
 
-        log.info("Creating embedding for LogAnalysis ID={}", analysis.getId());
+        log.info("Creating normalized embedding for LogAnalysis ID={}", analysis.getId());
 
-        List<Float> embedding =
-                embeddingService.createEmbedding(
-                        analysis.getLogContent()
-                );
-        log.info("Embedding first 10 values: {}",
-                embedding.subList(0, 10));
+        // Use noise-reduced normalized message for precise vector embedding
+        String textToEmbed = (analysis.getNormalizedMessage() != null && !analysis.getNormalizedMessage().isBlank())
+                ? analysis.getNormalizedMessage()
+                : analysis.getLogContent();
+
+        List<Float> embedding = embeddingService.createEmbedding(textToEmbed);
 
         if (embedding == null || embedding.isEmpty()) {
-            throw new IllegalStateException("Embedding could not be created.");
+            log.warn("Embedding servisi yanıt vermedi, vektör kaydı atlandı. LogAnalysis ID={}", analysis.getId());
+            return;
+        }
+
+        if (log.isDebugEnabled() && embedding.size() >= 10) {
+            log.debug("Embedding first 10 values: {}", embedding.subList(0, 10));
         }
 
         float[] vector = new float[embedding.size()];
@@ -53,6 +58,6 @@ public class EmbeddingStorageService {
 
         repository.save(entity);
 
-        log.info("Embedding saved successfully. LogAnalysis ID={}", analysis.getId());
+        log.info("Normalized embedding saved successfully. LogAnalysis ID={}", analysis.getId());
     }
 }

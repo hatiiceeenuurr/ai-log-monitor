@@ -8,7 +8,6 @@ import org.springframework.web.client.RestClient;
 import java.util.Map;
 
 @Service
-@Primary
 public class OllamaAIProvider implements AIProvider {
 
     @Value("${ollama.chat.url}")

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,7 +30,7 @@ public class EmbeddingService {
     public List<Float> createEmbedding(String text) {
 
         if (text == null || text.isBlank()) {
-            throw new IllegalArgumentException("Text cannot be null or blank.");
+            return Collections.emptyList();
         }
 
         EmbeddingRequest request = new EmbeddingRequest();
@@ -48,7 +49,8 @@ public class EmbeddingService {
                     .body(EmbeddingResponse.class);
 
             if (response == null || response.getEmbedding() == null) {
-                throw new IllegalStateException("Embedding could not be created.");
+                log.warn("Ollama returned empty embedding response.");
+                return Collections.emptyList();
             }
 
             log.debug("Embedding created successfully. Dimension={}",
@@ -57,9 +59,8 @@ public class EmbeddingService {
             return response.getEmbedding();
 
         } catch (Exception e) {
-
-            log.error("Failed to create embedding.", e);
-            throw e;
+            log.warn("Ollama embedding servisi kapalı veya yanıt vermiyor (Vektör araması atlandı): {}", e.getMessage());
+            return Collections.emptyList();
         }
     }
 }

@@ -5,12 +5,20 @@ import com.teknokent.ailogmonitor.dto.LogAnalysisResult;
 import com.teknokent.ailogmonitor.entity.LogAnalysis;
 import com.teknokent.ailogmonitor.entity.Scan;
 import com.teknokent.ailogmonitor.repository.LogAnalysisRepository;
+import com.teknokent.ailogmonitor.repository.LogEmbeddingRepository;
+import com.teknokent.ailogmonitor.repository.ScanRepository;
 import com.teknokent.ailogmonitor.service.embedding.EmbeddingStorageService;
 import com.teknokent.ailogmonitor.service.notification.NotificationService;
+import com.teknokent.ailogmonitor.service.parser.LogNormalizer;
 import com.teknokent.ailogmonitor.service.priority.PriorityService;
+import com.teknokent.ailogmonitor.service.rag.RagService;
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,19 +31,31 @@ public class ReportService {
             LoggerFactory.getLogger(ReportService.class);
 
     private final LogAnalysisRepository repository;
+    private final LogEmbeddingRepository logEmbeddingRepository;
+    private final ScanRepository scanRepository;
     private final EmbeddingStorageService embeddingStorageService;
     private final PriorityService priorityService;
     private final NotificationService notificationService;
+    private final LogNormalizer logNormalizer;
+    private final EntityManager entityManager;
 
     public ReportService(LogAnalysisRepository repository,
+                         LogEmbeddingRepository logEmbeddingRepository,
+                         ScanRepository scanRepository,
                          EmbeddingStorageService embeddingStorageService,
                          PriorityService priorityService,
-                         NotificationService notificationService) {
+                         NotificationService notificationService,
+                         LogNormalizer logNormalizer,
+                         EntityManager entityManager) {
 
         this.repository = repository;
+        this.logEmbeddingRepository = logEmbeddingRepository;
+        this.scanRepository = scanRepository;
         this.embeddingStorageService = embeddingStorageService;
         this.priorityService = priorityService;
         this.notificationService = notificationService;
+        this.logNormalizer = logNormalizer;
+        this.entityManager = entityManager;
     }
 
     public LogAnalysisResult parseAIResponse(String response) {
@@ -91,40 +111,44 @@ public class ReportService {
         );
     }
 
-    public LogAnalysis saveAnalysis(Scan scan,
-                                    String logContent,
-                                    String severity,
-                                    String aiResponse) {
+    public LogAnalysis processLog(Scan scan,
+                                  String logContent,
+                                  String severity,
+                                  RagService ragService) {
 
-        LogAnalysisResult result = parseAIResponse(aiResponse);
+        String normalizedMessage = logNormalizer.normalize(logContent);
+        String normalizedHash = logNormalizer.generateHash(normalizedMessage);
 
-        Optional<LogAnalysis> lastAnalysis =
-                repository.findFirstByLogContentOrderByAnalyzedAtDesc(logContent);
+        Optional<LogAnalysis> existingPattern =
+                repository.findFirstByNormalizedHashOrderByAnalyzedAtDesc(normalizedHash);
 
-        if (lastAnalysis.isPresent()) {
-
-            LogAnalysis previous = lastAnalysis.get();
-
-            boolean sameAnalysis =
-                    previous.getProblem().equals(result.getProblem())
-                            && previous.getCause().equals(result.getCause())
-                            && previous.getSolution().equals(result.getSolution());
-
-            if (sameAnalysis) {
-                log.info("Analysis unchanged. Skipping save for log: {}", logContent);
-                return previous;
-            }
+        if (existingPattern.isPresent()) {
+            LogAnalysis patternLog = existingPattern.get();
+            patternLog.setOccurrenceCount(patternLog.getOccurrenceCount() + 1);
+            patternLog.setLastSeenAt(LocalDateTime.now());
+            log.info("Pattern deduplicated. Incremented occurrence count to {} for hash {}",
+                    patternLog.getOccurrenceCount(), normalizedHash);
+            LogAnalysis updated = repository.save(patternLog);
+            notificationService.notify(updated);
+            return updated;
         }
+
+        String aiResponse = ragService.analyze(logContent);
+        LogAnalysisResult result = parseAIResponse(aiResponse);
 
         LogAnalysis analysis = new LogAnalysis();
 
         analysis.setScan(scan);
         analysis.setLogContent(logContent);
+        analysis.setNormalizedMessage(normalizedMessage);
+        analysis.setNormalizedHash(normalizedHash);
         analysis.setSeverity(severity);
         analysis.setProblem(result.getProblem());
         analysis.setCause(result.getCause());
         analysis.setSolution(result.getSolution());
+        analysis.setOccurrenceCount(1);
         analysis.setAnalyzedAt(LocalDateTime.now());
+        analysis.setLastSeenAt(LocalDateTime.now());
 
         analysis.setPriority(
                 priorityService.determinePriority(
@@ -153,6 +177,53 @@ public class ReportService {
         return savedAnalysis;
     }
 
+    public LogAnalysis saveAnalysis(Scan scan,
+                                    String logContent,
+                                    String severity,
+                                    String aiResponse) {
+        String normalizedMessage = logNormalizer.normalize(logContent);
+        String normalizedHash = logNormalizer.generateHash(normalizedMessage);
+
+        LogAnalysisResult result = parseAIResponse(aiResponse);
+
+        LogAnalysis analysis = new LogAnalysis();
+        analysis.setScan(scan);
+        analysis.setLogContent(logContent);
+        analysis.setNormalizedMessage(normalizedMessage);
+        analysis.setNormalizedHash(normalizedHash);
+        analysis.setSeverity(severity);
+        analysis.setProblem(result.getProblem());
+        analysis.setCause(result.getCause());
+        analysis.setSolution(result.getSolution());
+        analysis.setOccurrenceCount(1);
+        analysis.setAnalyzedAt(LocalDateTime.now());
+        analysis.setLastSeenAt(LocalDateTime.now());
+
+        analysis.setPriority(
+                priorityService.determinePriority(
+                        severity,
+                        result.getProblem(),
+                        logContent
+                )
+        );
+
+        return repository.save(analysis);
+    }
+
+    @Transactional
+    public void resetAllData() {
+        try {
+            entityManager.createNativeQuery("TRUNCATE TABLE log_embedding, log_analysis, scan RESTART IDENTITY CASCADE").executeUpdate();
+            log.info("TRUNCATE CASCADE executed successfully for log_embedding, log_analysis, and scan.");
+        } catch (Exception e) {
+            log.warn("TRUNCATE failed ({}), falling back to JPA deleteAll...", e.getMessage());
+            logEmbeddingRepository.deleteAll();
+            repository.deleteAll();
+            scanRepository.deleteAll();
+        }
+        log.info("Tüm veritabanı analiz kayıtları sıfırlandı.");
+    }
+
     public long getTotalLogs() {
         return repository.count();
     }
@@ -163,6 +234,10 @@ public class ReportService {
 
     public long getWarnCount() {
         return repository.countBySeverity("WARN");
+    }
+
+    public long getInfoCount() {
+        return repository.countBySeverity("INFO");
     }
 
     public LocalDateTime getLastAnalysisTime() {
@@ -178,6 +253,14 @@ public class ReportService {
         return repository.findTop5ByOrderByAnalyzedAtDesc();
     }
 
+    public List<LogAnalysis> getAllLogs() {
+        return repository.findAllByOrderByAnalyzedAtDesc();
+    }
+
+    public Page<LogAnalysis> getLogsPaginated(Pageable pageable) {
+        return repository.findAllByOrderByAnalyzedAtDesc(pageable);
+    }
+
     public List<DailyAnalysisDTO> getDailyAnalysis() {
 
         return repository.getDailyAnalysisCounts()
@@ -188,7 +271,10 @@ public class ReportService {
                 ))
                 .toList();
     }
+
     public boolean isAlreadyProcessed(String logContent) {
-        return repository.existsByLogContent(logContent);
+        String normalized = logNormalizer.normalize(logContent);
+        String hash = logNormalizer.generateHash(normalized);
+        return repository.existsByNormalizedHash(hash);
     }
 }

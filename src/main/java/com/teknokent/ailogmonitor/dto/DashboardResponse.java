@@ -10,6 +10,7 @@ public class DashboardResponse {
     private long totalLogs;
     private long errorCount;
     private long warnCount;
+    private long infoCount;
     private LocalDateTime lastAnalysis;
     private List<LogAnalysis> recentLogs;
 
@@ -19,12 +20,14 @@ public class DashboardResponse {
     public DashboardResponse(long totalLogs,
                              long errorCount,
                              long warnCount,
+                             long infoCount,
                              LocalDateTime lastAnalysis,
                              List<LogAnalysis> recentLogs) {
 
         this.totalLogs = totalLogs;
         this.errorCount = errorCount;
         this.warnCount = warnCount;
+        this.infoCount = infoCount;
         this.lastAnalysis = lastAnalysis;
         this.recentLogs = recentLogs;
     }
@@ -51,6 +54,14 @@ public class DashboardResponse {
 
     public void setWarnCount(long warnCount) {
         this.warnCount = warnCount;
+    }
+
+    public long getInfoCount() {
+        return infoCount;
+    }
+
+    public void setInfoCount(long infoCount) {
+        this.infoCount = infoCount;
     }
 
     public LocalDateTime getLastAnalysis() {

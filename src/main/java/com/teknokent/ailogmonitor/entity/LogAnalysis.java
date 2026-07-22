@@ -1,11 +1,15 @@
 package com.teknokent.ailogmonitor.entity;
 
-import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.time.LocalDateTime;
 import com.teknokent.ailogmonitor.priority.Priority;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "log_analysis")
+@Table(name = "log_analysis", indexes = {
+        @Index(name = "idx_normalized_hash", columnList = "normalized_hash")
+})
 public class LogAnalysis {
 
     @Id
@@ -30,12 +34,22 @@ public class LogAnalysis {
     @Column(columnDefinition = "TEXT")
     private String normalizedMessage;
 
+    @Column(name = "normalized_hash", length = 64)
+    private String normalizedHash;
+
+    @Column(name = "occurrence_count")
+    private Integer occurrenceCount = 1;
+
     private LocalDateTime analyzedAt;
+
+    @Column(name = "last_seen_at")
+    private LocalDateTime lastSeenAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "scan_id")
     @JsonIgnore
     private Scan scan;
+
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
@@ -95,12 +109,36 @@ public class LogAnalysis {
         this.normalizedMessage = normalizedMessage;
     }
 
+    public String getNormalizedHash() {
+        return normalizedHash;
+    }
+
+    public void setNormalizedHash(String normalizedHash) {
+        this.normalizedHash = normalizedHash;
+    }
+
+    public Integer getOccurrenceCount() {
+        return occurrenceCount != null ? occurrenceCount : 1;
+    }
+
+    public void setOccurrenceCount(Integer occurrenceCount) {
+        this.occurrenceCount = occurrenceCount;
+    }
+
     public LocalDateTime getAnalyzedAt() {
         return analyzedAt;
     }
 
     public void setAnalyzedAt(LocalDateTime analyzedAt) {
         this.analyzedAt = analyzedAt;
+    }
+
+    public LocalDateTime getLastSeenAt() {
+        return lastSeenAt != null ? lastSeenAt : analyzedAt;
+    }
+
+    public void setLastSeenAt(LocalDateTime lastSeenAt) {
+        this.lastSeenAt = lastSeenAt;
     }
 
     public Scan getScan() {
@@ -118,5 +156,4 @@ public class LogAnalysis {
     public void setPriority(Priority priority) {
         this.priority = priority;
     }
-
 }

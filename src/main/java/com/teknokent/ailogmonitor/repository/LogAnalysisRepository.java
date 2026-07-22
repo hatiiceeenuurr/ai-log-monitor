@@ -1,6 +1,8 @@
 package com.teknokent.ailogmonitor.repository;
 
 import com.teknokent.ailogmonitor.entity.LogAnalysis;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,10 +17,17 @@ public interface LogAnalysisRepository
 
     List<LogAnalysis> findTop5ByOrderByAnalyzedAtDesc();
 
+    List<LogAnalysis> findAllByOrderByAnalyzedAtDesc();
+
+    Page<LogAnalysis> findAllByOrderByAnalyzedAtDesc(Pageable pageable);
+
     Optional<LogAnalysis> findFirstByLogContentOrderByAnalyzedAtDesc(String logContent);
 
-    // Aynı fiziksel log satırı daha önce işlendi mi?
+    Optional<LogAnalysis> findFirstByNormalizedHashOrderByAnalyzedAtDesc(String normalizedHash);
+
     boolean existsByLogContent(String logContent);
+
+    boolean existsByNormalizedHash(String normalizedHash);
 
     @Query("""
             SELECT

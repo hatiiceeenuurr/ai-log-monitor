@@ -44,7 +44,11 @@ public class LogMonitorScheduler {
     @Scheduled(fixedDelayString = "${monitor.interval}")
     public void analyzeLogs() throws IOException {
 
-        List<String> logs = logReaderService.readLogs();
+        List<String> logs = logReaderService.readAndClearLogs();
+        if (logs.isEmpty()) {
+            log.info("No new logs found to analyze.");
+            return;
+        }
         List<LogEntry> logEntries = logParserService.parseLogs(logs);
 
         Scan scan = scanService.startScan(logs.size());
@@ -53,11 +57,6 @@ public class LogMonitorScheduler {
         int warnCount = 0;
 
         for (LogEntry entry : logEntries) {
-            if (reportService.isAlreadyProcessed(entry.getContent())) {
-                log.debug("Log already processed. Skipping: {}", entry.getContent());
-                continue;
-            }
-
             if (entry.getSeverity() == Severity.ERROR) {
                 errorCount++;
             } else if (entry.getSeverity() == Severity.WARN) {
@@ -65,21 +64,18 @@ public class LogMonitorScheduler {
             }
 
             try {
+                log.info("Processing log entry: {}", entry.getContent());
 
-                log.info("Analyzing log: {}", entry.getContent());
-
-                String aiResponse = ragService.analyze(entry.getContent());
-
-                reportService.saveAnalysis(
+                // Smart Normalization & Pattern Deduplication via processLog
+                reportService.processLog(
                         scan,
                         entry.getContent(),
                         entry.getSeverity().name(),
-                        aiResponse
+                        ragService
                 );
 
             } catch (Exception e) {
-
-                log.error("Failed to analyze log: {}", entry.getContent(), e);
+                log.error("Failed to process log: {}", entry.getContent(), e);
             }
         }
 

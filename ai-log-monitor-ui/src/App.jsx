@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import MainLayout from "./layouts/MainLayout";
@@ -8,28 +9,32 @@ import Dashboard from "./pages/Dashboard";
 import Analysis from "./pages/Analysis";
 import RagSearch from "./pages/RagSearch";
 import Scan from "./pages/Scan";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public Login Route */}
-            <Route path="/login" element={<Login />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public Login Route */}
+              <Route path="/login" element={<Login />} />
 
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="analysis" element={<Analysis />} />
-                <Route path="rag" element={<RagSearch />} />
-                <Route path="scan" element={<Scan />} />
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="analysis" element={<Analysis />} />
+                  <Route path="rag" element={<RagSearch />} />
+                  <Route path="scan" element={<Scan />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
               </Route>
-            </Route>
 
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
   );
 }
 

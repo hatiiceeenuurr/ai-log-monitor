@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getLogsPaginated } from '../services/api';
 import LogDetailModal from '../components/modals/LogDetailModal';
+import { exportLogsToCSV } from '../utils/exportUtils';
 
 function Analysis() {
     const [pageData, setPageData] = useState({ content: [], totalPages: 0, totalElements: 0 });
@@ -10,6 +11,7 @@ function Analysis() {
     const [filterSeverity, setFilterSeverity] = useState('ALL');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedLog, setSelectedLog] = useState(null);
+    const [copiedId, setCopiedId] = useState(null);
 
     const fetchLogs = async () => {
         try {
@@ -26,6 +28,13 @@ function Analysis() {
     useEffect(() => {
         fetchLogs();
     }, [page, pageSize]);
+
+    const handleCopySolution = (logId, text) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        setCopiedId(logId);
+        setTimeout(() => setCopiedId(null), 2500);
+    };
 
     const logs = pageData.content || [];
     const filteredLogs = logs.filter(log => {
@@ -53,7 +62,18 @@ function Analysis() {
 
     return (
         <div className="container-fluid p-4">
-            <h2 className="mb-4">Historical Log Analysis Records</h2>
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 className="mb-0 fw-bold">Historical Log Analysis Records</h2>
+                    <small className="text-muted">Total {pageData.totalElements || 0} analyses registered</small>
+                </div>
+                <button
+                    className="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
+                    onClick={() => exportLogsToCSV(filteredLogs, 'historical_log_analysis.csv')}
+                >
+                    <span>📥</span> Export CSV Report
+                </button>
+            </div>
 
             <div className="row mb-4 g-3">
                 <div className="col-md-5">
@@ -83,14 +103,11 @@ function Analysis() {
                         value={pageSize}
                         onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
                     >
-                        <option value="5">5 Records / Page</option>
-                        <option value="10">10 Records / Page</option>
-                        <option value="20">20 Records / Page</option>
-                        <option value="50">50 Records / Page</option>
+                        <option value="5">5 / Page</option>
+                        <option value="10">10 / Page</option>
+                        <option value="20">20 / Page</option>
+                        <option value="50">50 / Page</option>
                     </select>
-                </div>
-                <div className="col-md-2 text-end align-self-center">
-                    <span className="text-muted small">Total {pageData.totalElements || 0} records</span>
                 </div>
             </div>
 
@@ -101,7 +118,7 @@ function Analysis() {
                     </div>
                 </div>
             ) : filteredLogs.length === 0 ? (
-                <div className="alert alert-info text-center">
+                <div className="alert alert-info text-center shadow-sm border-0 rounded-3">
                     No matching log records found.
                 </div>
             ) : (
@@ -109,8 +126,8 @@ function Analysis() {
                     <div className="row g-3">
                         {filteredLogs.map(log => (
                             <div key={log.id} className="col-12">
-                                <div className="card shadow-sm border-start border-4 border-primary" style={{ cursor: 'pointer' }} onClick={() => setSelectedLog(log)}>
-                                    <div className="card-header bg-light d-flex justify-content-between align-items-center">
+                                <div className="card shadow-sm border-start border-4 border-primary">
+                                    <div className="card-header bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
                                         <div>
                                             {getSeverityBadge(log.severity)}
                                             <span className="ms-2 badge bg-secondary">{log.priority || 'NORMAL'}</span>
@@ -122,14 +139,34 @@ function Analysis() {
                                                 {log.lastSeenAt && ` | Last: ${new Date(log.lastSeenAt).toLocaleString('en-US')}`}
                                             </span>
                                         </div>
-                                        <button className="btn btn-sm btn-outline-primary rounded-pill px-3" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
-                                            Inspect Details 🔍
-                                        </button>
+                                        <div className="d-flex align-items-center gap-2">
+                                            {log.solution && (
+                                                <button
+                                                    className="btn btn-sm btn-outline-success rounded-pill px-3 copy-btn"
+                                                    onClick={() => handleCopySolution(log.id, log.solution)}
+                                                >
+                                                    {copiedId === log.id ? 'Copied! ✓' : '📋 Copy Solution'}
+                                                </button>
+                                            )}
+                                            <button 
+                                                className="btn btn-sm btn-outline-primary rounded-pill px-3" 
+                                                onClick={() => setSelectedLog(log)}
+                                            >
+                                                Inspect Details 🔍
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="card-body">
                                         <h6 className="card-title text-danger mb-2">Problem: {log.problem}</h6>
                                         {log.cause && <p className="card-text mb-1"><strong>Cause:</strong> {log.cause}</p>}
-                                        {log.solution && <p className="card-text mb-2 text-success"><strong>Solution:</strong> {log.solution}</p>}
+                                        {log.solution && (
+                                            <div className="mb-3">
+                                                <strong className="text-success small d-block mb-1">Recommended AI Solution:</strong>
+                                                <div className="solution-code-box">
+                                                    <code>{log.solution}</code>
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className="bg-dark text-light p-2 rounded small font-monospace">
                                             <code>{log.logContent}</code>
                                         </div>
@@ -142,19 +179,19 @@ function Analysis() {
                     {/* Pagination Controls */}
                     <div className="d-flex justify-content-between align-items-center mt-4">
                         <button 
-                            className="btn btn-outline-secondary btn-sm"
+                            className="btn btn-outline-secondary btn-sm rounded-pill px-3"
                             disabled={page === 0}
                             onClick={() => setPage(p => Math.max(0, p - 1))}
                         >
                             &laquo; Previous Page
                         </button>
 
-                        <span className="small text-muted">
+                        <span className="small text-muted fw-semibold">
                             Page {page + 1} of {pageData.totalPages || 1}
                         </span>
 
                         <button 
-                            className="btn btn-outline-secondary btn-sm"
+                            className="btn btn-outline-secondary btn-sm rounded-pill px-3"
                             disabled={page >= (pageData.totalPages - 1)}
                             onClick={() => setPage(p => p + 1)}
                         >

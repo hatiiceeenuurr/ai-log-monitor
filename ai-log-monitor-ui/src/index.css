@@ -1,18 +1,44 @@
-:root {
-  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
 
-  font-family: var(--sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+/* Light Theme Variables */
+body.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --nav-bg: #ffffff;
+  --code-bg: #1e293b;
+  --code-text: #f8fafc;
+}
+
+/* Dark Theme Variables (Default Sleek Dark Mode) */
+body.dark-theme, body {
+  --bg-primary: #0b0f19;
+  --bg-card: #151c2c;
+  --bg-card-subtle: #1e293b;
+  --border-color: #243048;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --nav-bg: #0f172a;
+  --code-bg: #0d1117;
+  --code-text: #38bdf8;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #f8fafc;
-  color: #0f172a;
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
@@ -22,14 +48,141 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #0f172a;
+  font-family: var(--font-sans);
+  color: var(--text-main);
   font-weight: 700;
 }
 
-code, pre {
-  font-family: var(--mono);
+.card {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Header Navbar */
+.navbar {
+  background-color: var(--nav-bg) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Pulsing Green Dot */
+.pulse-dot {
+  display: inline-block;
+  animation: pulse-animation 1.5s infinite;
+}
+
+@keyframes pulse-animation {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Health Bar */
+.health-bar-container {
+  background-color: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.health-divider {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+/* Donut Chart SVG Center Text */
+.donut-svg {
+  width: 140px;
+  height: 140px;
+}
+
+.donut-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.legend-item:hover {
+  background-color: var(--bg-card-subtle);
+  border-radius: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Code Snippet Box */
+.solution-code-box {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  font-family: var(--font-mono);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 0.88rem;
+  position: relative;
+}
+
+.copy-btn {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+/* Dark Theme Overrides for Bootstrap Classes */
+body.dark-theme .text-dark,
+body.dark-theme h1, body.dark-theme h2, body.dark-theme h3, 
+body.dark-theme h4, body.dark-theme h5, body.dark-theme h6 {
+  color: var(--text-main) !important;
+}
+
+body.dark-theme .text-muted {
+  color: var(--text-muted) !important;
+}
+
+body.dark-theme .bg-white, 
+body.dark-theme .bg-light,
+body.dark-theme .bg-body-tertiary {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+}
+
+body.dark-theme .table {
+  color: var(--text-main) !important;
+  --bs-table-bg: var(--bg-card);
+  --bs-table-striped-bg: var(--bg-card-subtle);
+  --bs-table-hover-bg: var(--bg-card-subtle);
+}
+
+body.dark-theme .form-control, 
+body.dark-theme .form-select {
+  background-color: var(--bg-card-subtle) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-theme .form-control::placeholder {
+  color: var(--text-muted) !important;
+}
+
+body.dark-theme .modal-content {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-color);
 }

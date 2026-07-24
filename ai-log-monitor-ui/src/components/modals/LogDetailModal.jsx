@@ -11,7 +11,7 @@ function LogDetailModal({ log, onClose }) {
                                 {log.severity}
                             </span>
                             <span className="badge bg-secondary">{log.priority || 'NORMAL'}</span>
-                            <h5 className="modal-title mb-0 ms-2">Log Analysis Detail #{log.id}</h5>
+                            <h5 className="modal-title mb-0 ms-2 text-white">Log Analysis Detail #{log.id}</h5>
                         </div>
                         <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
                     </div>

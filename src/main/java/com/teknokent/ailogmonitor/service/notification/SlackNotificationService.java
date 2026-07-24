@@ -17,6 +17,11 @@ public class SlackNotificationService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public void send(LogAnalysis analysis) {
+        if (webhookUrl == null || webhookUrl.isBlank() || !webhookUrl.startsWith("http")) {
+            System.out.println("SLACK NOTIFICATION -> Skipping alert (Webhook URL is not configured).");
+            return;
+        }
+
         System.out.println("SLACK NOTIFICATION -> " + analysis.getPriority());
         String message = """
                 🚨 *AI LOG MONITOR*

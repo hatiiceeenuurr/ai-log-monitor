@@ -40,7 +40,7 @@ function RecentAnalysis({ logs = [] }) {
         <>
             <div className="card shadow-sm mt-4 border-0 rounded-3 overflow-hidden">
                 <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                    <h5 className="mb-0 fw-bold fs-6">Recent Log Analysis Records</h5>
+                    <h5 className="mb-0 fw-bold fs-6 text-white">Recent Log Analysis Records</h5>
                     <span className="badge bg-secondary rounded-pill px-3">{logs.length} Records</span>
                 </div>
 

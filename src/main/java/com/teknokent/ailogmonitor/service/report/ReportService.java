@@ -64,43 +64,45 @@ public class ReportService {
         StringBuilder cause = new StringBuilder();
         StringBuilder solution = new StringBuilder();
 
-        String[] lines = response.split("\\R");
+        if (response == null || response.isBlank()) {
+            return new LogAnalysisResult("", "", "");
+        }
 
+        String[] lines = response.split("\\R");
         String currentSection = "";
 
-        for (String line : lines) {
+        for (String rawLine : lines) {
+            String line = rawLine.trim();
+            if (line.isBlank()) continue;
 
-            line = line.trim();
+            String cleanedLine = line.replaceAll("^\\*+|\\*+$", "").trim();
+            String lower = cleanedLine.toLowerCase();
 
-            if (line.startsWith("Problem:")) {
+            if (lower.startsWith("problem:") || lower.startsWith("problem :") || lower.startsWith("### problem")) {
                 currentSection = "problem";
+                String val = cleanedLine.replaceAll("(?i)^(?:###\\s*)?problem\\s*:\\s*", "").trim();
+                if (!val.isEmpty()) problem.append(val).append(" ");
                 continue;
             }
 
-            if (line.startsWith("Cause:")) {
+            if (lower.startsWith("cause:") || lower.startsWith("probable cause:") || lower.startsWith("cause :") || lower.startsWith("### cause")) {
                 currentSection = "cause";
+                String val = cleanedLine.replaceAll("(?i)^(?:###\\s*)?(?:probable\\s+)?cause\\s*:\\s*", "").trim();
+                if (!val.isEmpty()) cause.append(val).append(" ");
                 continue;
             }
 
-            if (line.startsWith("Solution:")) {
+            if (lower.startsWith("solution:") || lower.startsWith("recommended solution:") || lower.startsWith("solution :") || lower.startsWith("### solution")) {
                 currentSection = "solution";
-                continue;
-            }
-
-            if (line.isBlank()) {
+                String val = cleanedLine.replaceAll("(?i)^(?:###\\s*)?(?:recommended\\s+)?solution\\s*:\\s*", "").trim();
+                if (!val.isEmpty()) solution.append(val).append(" ");
                 continue;
             }
 
             switch (currentSection) {
-
-                case "problem" ->
-                        problem.append(line).append(" ");
-
-                case "cause" ->
-                        cause.append(line).append(" ");
-
-                case "solution" ->
-                        solution.append(line).append(" ");
+                case "problem" -> problem.append(line).append(" ");
+                case "cause" -> cause.append(line).append(" ");
+                case "solution" -> solution.append(line).append(" ");
             }
         }
 

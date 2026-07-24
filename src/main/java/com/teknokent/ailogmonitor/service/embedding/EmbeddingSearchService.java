@@ -18,6 +18,8 @@ public class EmbeddingSearchService {
     private static final Logger log =
             LoggerFactory.getLogger(EmbeddingSearchService.class);
 
+    private static final double SIMILARITY_THRESHOLD = 70.0; // Minimum 70% threshold
+
     private final EmbeddingService embeddingService;
     private final EntityManager entityManager;
     private final LogNormalizer logNormalizer;
@@ -59,7 +61,7 @@ public class EmbeddingSearchService {
                         ORDER BY cosine_distance(le.embedding, :embedding)
                         """, Object[].class)
                         .setParameter("embedding", queryVector)
-                        .setMaxResults(6)
+                        .setMaxResults(10)
                         .getResultList();
         log.info("Candidate rows from database: {}", rows.size());
 
@@ -68,28 +70,35 @@ public class EmbeddingSearchService {
         for (Object[] row : rows) {
 
             LogEmbedding embeddingResult = (LogEmbedding) row[0];
-
-            log.info("Candidate ID: {}", embeddingResult.getLogAnalysis().getId());
-            log.info("Candidate Log: {}", embeddingResult.getLogAnalysis().getLogContent());
-            log.info("Current Log: {}", currentLog);
-
             double distance = ((Number) row[1]).doubleValue();
 
-            // Calibrated Cosine Similarity formula for high-precision realistic score
-            double similarity = (1.0 - distance) * 100.0;
-            similarity = Math.max(0.0, Math.min(100.0, similarity));
+            // Calculate raw cosine similarity percentage
+            double rawSimilarity = (1.0 - distance) * 100.0;
+            rawSimilarity = Math.max(0.0, Math.min(100.0, rawSimilarity));
 
-            log.debug(
-                    "LogId={} Similarity={} Distance={}",
+            // Strict Threshold Filtering: Filter out irrelevant logs below threshold
+            if (rawSimilarity < SIMILARITY_THRESHOLD) {
+                log.info("Candidate ID {} skipped due to low similarity ({:.2f}% < {:.0f}%)",
+                        embeddingResult.getLogAnalysis().getId(), rawSimilarity, SIMILARITY_THRESHOLD);
+                continue;
+            }
+
+            // Calibrated Linear Scaling: Map [70%, 100%] to dynamic intuitive range [30%, 98%]
+            double calibratedSimilarity = ((rawSimilarity - SIMILARITY_THRESHOLD) / (100.0 - SIMILARITY_THRESHOLD)) * 68.0 + 30.0;
+            calibratedSimilarity = Math.max(30.0, Math.min(99.0, calibratedSimilarity));
+
+            log.info(
+                    "LogId={} RawSimilarity={}% CalibratedSimilarity={}% Distance={}",
                     embeddingResult.getLogAnalysis().getId(),
-                    String.format("%.2f", similarity),
+                    String.format("%.2f", rawSimilarity),
+                    String.format("%.2f", calibratedSimilarity),
                     String.format("%.4f", distance)
             );
 
             results.add(
                     new SimilarLogResult(
                             embeddingResult.getLogAnalysis(),
-                            similarity,
+                            calibratedSimilarity,
                             distance
                     )
             );
@@ -99,17 +108,7 @@ public class EmbeddingSearchService {
             }
         }
 
-        log.info("EmbeddingSearchService returned {} results.", results.size());
-
-        for (SimilarLogResult result : results) {
-            log.info(
-                    "Similarity={} Distance={} Log={}",
-                    String.format("%.2f", result.getSimilarity()),
-                    String.format("%.4f", result.getDistance()),
-                    result.getAnalysis().getLogContent()
-            );
-        }
-
+        log.info("EmbeddingSearchService returned {} high-precision results.", results.size());
         return results;
     }
 }

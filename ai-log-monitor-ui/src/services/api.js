@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Attach Authorization Bearer token to every request automatically
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,6 +30,21 @@ export const registerUser = async (username, email, password) => {
 
 export const getCurrentUser = async () => {
     const response = await api.get('/auth/me');
+    return response.data;
+};
+
+export const changePassword = async (currentPassword, newPassword) => {
+    const response = await api.post('/auth/change-password', { currentPassword, newPassword });
+    return response.data;
+};
+
+export const requestPasswordResetCode = async (email) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+};
+
+export const confirmPasswordReset = async (email, code, newPassword) => {
+    const response = await api.post('/auth/reset-password', { email, code, newPassword });
     return response.data;
 };
 
@@ -55,6 +70,11 @@ export const getDailyAnalysis = async () => {
 
 export const resetAllLogData = async () => {
     const response = await api.post('/admin/reset-data');
+    return response.data;
+};
+
+export const searchLogs = async (query) => {
+    const response = await api.get(`/search?query=${encodeURIComponent(query)}`);
     return response.data;
 };
 

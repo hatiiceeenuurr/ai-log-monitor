@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { requestPasswordResetCode, confirmPasswordReset } from '../services/api';
 
 function Login() {
+    const { t } = useLanguage();
     const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -34,7 +36,7 @@ function Login() {
         try {
             if (isRegister) {
                 if (!username.trim() || !email.trim() || !password.trim()) {
-                    setError('Please fill in all required fields (Username, Email, Password).');
+                    setError('Please fill in all required fields.');
                     setLoading(false);
                     return;
                 }
@@ -56,7 +58,7 @@ function Login() {
             } else if (err.code === "ERR_NETWORK" || !err.response) {
                 setError('Server unreachable. Please ensure the backend application (port 8081) is running.');
             } else {
-                setError(isRegister ? 'Registration failed. Please check your credentials.' : 'Authentication failed. Please check your credentials.');
+                setError(isRegister ? 'Registration failed.' : 'Authentication failed.');
             }
         } finally {
             setLoading(false);
@@ -77,7 +79,7 @@ function Login() {
             } else if (err.code === "ERR_NETWORK" || !err.response) {
                 setError('Server unreachable. Please ensure the backend application (port 8081) is running.');
             } else {
-                setError('Demo login failed. Please ensure the backend application is running.');
+                setError('Demo login failed.');
             }
         } finally {
             setLoading(false);
@@ -97,10 +99,10 @@ function Login() {
             const res = await requestPasswordResetCode(resetEmail.trim());
             setResetEmail(res.email || resetEmail);
             setResetStep(2);
-            setResetMsg({ type: 'success', text: `Verification code sent to ${res.email || resetEmail}. Please check your inbox.` });
+            setResetMsg({ type: 'success', text: `Verification code sent to ${res.email || resetEmail}.` });
         } catch (err) {
             console.error("Request OTP error:", err);
-            const msg = err.response?.data?.message || 'Failed to request verification code. Check email address.';
+            const msg = err.response?.data?.message || 'Failed to send OTP reset code.';
             setResetMsg({ type: 'danger', text: msg });
         } finally {
             setResetLoading(false);
@@ -112,7 +114,7 @@ function Login() {
         setResetMsg({ type: '', text: '' });
 
         if (!otpCodeInput.trim() || !newResetPassword.trim()) {
-            setResetMsg({ type: 'danger', text: 'Please enter the 6-digit OTP code and your new password.' });
+            setResetMsg({ type: 'danger', text: 'Please enter the verification code and your new password.' });
             return;
         }
 
@@ -123,8 +125,8 @@ function Login() {
 
         try {
             setResetLoading(true);
-            const res = await confirmPasswordReset(resetEmail, otpCodeInput.trim(), newResetPassword.trim());
-            setResetMsg({ type: 'success', text: res.message || 'Password reset successfully! You can now sign in.' });
+            const res = await confirmPasswordReset(resetEmail.trim(), otpCodeInput.trim(), newResetPassword.trim());
+            setResetMsg({ type: 'success', text: res.message || 'Password reset successfully!' });
             setTimeout(() => {
                 setShowForgotModal(false);
                 setResetStep(1);
@@ -153,8 +155,8 @@ function Login() {
                     <div className="d-inline-flex align-items-center justify-content-center bg-primary bg-gradient rounded-circle mb-3 shadow" style={{ width: '64px', height: '64px' }}>
                         <span className="fs-2 text-white">🤖</span>
                     </div>
-                    <h3 className="fw-bold tracking-tight mb-1">AI Log Monitor</h3>
-                    <p className="text-secondary small">AI-Powered Log Analysis & Monitoring Platform</p>
+                    <h3 className="fw-bold tracking-tight mb-1">{t('loginTitle')}</h3>
+                    <p className="text-secondary small">{t('loginSub')}</p>
                 </div>
 
                 <div className="card border-0 shadow-lg rounded-4 text-white" 
@@ -171,7 +173,7 @@ function Login() {
                                 className={`btn btn-sm w-50 rounded-2 fw-semibold transition-all ${!isRegister ? 'btn-primary shadow' : 'btn-link text-secondary text-decoration-none'}`}
                                 onClick={() => { setIsRegister(false); setError(''); }}
                             >
-                                Sign In
+                                {t('loginBtn')}
                             </button>
                             <button 
                                 type="button"

@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 function TrendChart({ logs = [] }) {
+    const { t } = useLanguage();
     const [hoveredPoint, setHoveredPoint] = useState(null);
 
     // Group logs by hour or index
@@ -42,10 +44,10 @@ function TrendChart({ logs = [] }) {
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="fw-bold mb-0 text-uppercase tracking-wider">
                     <i className="bi bi-graph-up-arrow me-2 text-success"></i>
-                    Log Volume Activity (24H Timeline)
+                    {t('logActivityTrend')}
                 </h6>
                 <span className="badge bg-success-subtle text-success rounded-pill px-3 py-1">
-                    ● Real-Time Stream
+                    ● {t('liveStreamActive')}
                 </span>
             </div>
 

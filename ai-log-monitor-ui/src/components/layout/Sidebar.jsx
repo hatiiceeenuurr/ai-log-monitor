@@ -1,6 +1,9 @@
 import { NavLink } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 function Sidebar() {
+    const { t } = useLanguage();
+
     return (
         <div
             className="bg-dark text-white p-3 border-end border-secondary border-opacity-25"
@@ -22,7 +25,7 @@ function Sidebar() {
                             `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
                         }
                     >
-                        📊 Dashboard
+                        📊 {t('navDashboard')}
                     </NavLink>
                 </li>
 
@@ -33,7 +36,7 @@ function Sidebar() {
                             `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
                         }
                     >
-                        📋 Log Analysis
+                        📋 {t('navAnalysis')}
                     </NavLink>
                 </li>
 
@@ -44,7 +47,7 @@ function Sidebar() {
                             `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
                         }
                     >
-                        🔍 RAG Search
+                        🔍 {t('navRagSearch')}
                     </NavLink>
                 </li>
 
@@ -55,7 +58,7 @@ function Sidebar() {
                             `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
                         }
                     >
-                        ⚡ Scan History
+                        ⚡ {t('navScanScheduler')}
                     </NavLink>
                 </li>
 
@@ -66,7 +69,7 @@ function Sidebar() {
                             `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
                         }
                     >
-                        ⚙️ Settings
+                        ⚙️ {t('navSettings')}
                     </NavLink>
                 </li>
 

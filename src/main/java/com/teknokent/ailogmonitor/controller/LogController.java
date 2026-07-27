@@ -1,7 +1,9 @@
 package com.teknokent.ailogmonitor.controller;
 
 import com.teknokent.ailogmonitor.dto.DailyAnalysisDTO;
+import com.teknokent.ailogmonitor.dto.LogAnalysisResponse;
 import com.teknokent.ailogmonitor.dto.SimilarLogResult;
+import com.teknokent.ailogmonitor.entity.Language;
 import com.teknokent.ailogmonitor.entity.LogAnalysis;
 import com.teknokent.ailogmonitor.service.embedding.EmbeddingSearchService;
 import com.teknokent.ailogmonitor.service.embedding.EmbeddingService;
@@ -33,9 +35,9 @@ public class LogController {
     }
 
     @GetMapping("/logs")
-    public List<LogAnalysis> getAllLogs() {
-        return reportService.getAllLogs();
-    }
+    public List<LogAnalysisResponse> getAllLogs(
+            @RequestParam(defaultValue = "TR") Language language
+    ){return reportService.getAllLogs(language); }
 
     @GetMapping("/logs/page")
     public Page<LogAnalysis> getLogsPaginated(

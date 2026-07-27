@@ -19,11 +19,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.teknokent.ailogmonitor.dto.LogAnalysisResponse;
+import com.teknokent.ailogmonitor.entity.Language;
+import com.teknokent.ailogmonitor.entity.LogAnalysisTranslation;
+import com.teknokent.ailogmonitor.service.translation.TranslationService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+import com.teknokent.ailogmonitor.service.ai.AIResponseParser;
 @Service
 public class ReportService {
 
@@ -38,6 +41,8 @@ public class ReportService {
     private final NotificationService notificationService;
     private final LogNormalizer logNormalizer;
     private final EntityManager entityManager;
+    private final AIResponseParser aiResponseParser;
+    private final TranslationService translationService;
 
     public ReportService(LogAnalysisRepository repository,
                          LogEmbeddingRepository logEmbeddingRepository,
@@ -46,7 +51,9 @@ public class ReportService {
                          PriorityService priorityService,
                          NotificationService notificationService,
                          LogNormalizer logNormalizer,
-                         EntityManager entityManager) {
+                         EntityManager entityManager,
+                         AIResponseParser aiResponseParser,
+                         TranslationService translationService) {
 
         this.repository = repository;
         this.logEmbeddingRepository = logEmbeddingRepository;
@@ -56,61 +63,31 @@ public class ReportService {
         this.notificationService = notificationService;
         this.logNormalizer = logNormalizer;
         this.entityManager = entityManager;
+        this.aiResponseParser = aiResponseParser;
+        this.translationService = translationService;
     }
 
-    public LogAnalysisResult parseAIResponse(String response) {
 
-        StringBuilder problem = new StringBuilder();
-        StringBuilder cause = new StringBuilder();
-        StringBuilder solution = new StringBuilder();
 
-        if (response == null || response.isBlank()) {
-            return new LogAnalysisResult("", "", "");
-        }
+    private LogAnalysis buildAnalysis(
+            Scan scan,
+            String logContent,
+            String severity,
+            String normalizedMessage,
+            String normalizedHash,
+            LogAnalysisResult result
+    ) {
 
-        String[] lines = response.split("\\R");
-        String currentSection = "";
-
-        for (String rawLine : lines) {
-            String line = rawLine.trim();
-            if (line.isBlank()) continue;
-
-            String cleanedLine = line.replaceAll("^\\*+|\\*+$", "").trim();
-            String lower = cleanedLine.toLowerCase();
-
-            if (lower.startsWith("problem:") || lower.startsWith("problem :") || lower.startsWith("### problem")) {
-                currentSection = "problem";
-                String val = cleanedLine.replaceAll("(?i)^(?:###\\s*)?problem\\s*:\\s*", "").trim();
-                if (!val.isEmpty()) problem.append(val).append(" ");
-                continue;
-            }
-
-            if (lower.startsWith("cause:") || lower.startsWith("probable cause:") || lower.startsWith("cause :") || lower.startsWith("### cause")) {
-                currentSection = "cause";
-                String val = cleanedLine.replaceAll("(?i)^(?:###\\s*)?(?:probable\\s+)?cause\\s*:\\s*", "").trim();
-                if (!val.isEmpty()) cause.append(val).append(" ");
-                continue;
-            }
-
-            if (lower.startsWith("solution:") || lower.startsWith("recommended solution:") || lower.startsWith("solution :") || lower.startsWith("### solution")) {
-                currentSection = "solution";
-                String val = cleanedLine.replaceAll("(?i)^(?:###\\s*)?(?:recommended\\s+)?solution\\s*:\\s*", "").trim();
-                if (!val.isEmpty()) solution.append(val).append(" ");
-                continue;
-            }
-
-            switch (currentSection) {
-                case "problem" -> problem.append(line).append(" ");
-                case "cause" -> cause.append(line).append(" ");
-                case "solution" -> solution.append(line).append(" ");
-            }
-        }
-
-        return new LogAnalysisResult(
-                problem.toString().trim(),
-                cause.toString().trim(),
-                solution.toString().trim()
+        LogAnalysis analysis = buildAnalysis(
+                scan,
+                logContent,
+                severity,
+                normalizedMessage,
+                normalizedHash,
+                result
         );
+
+        return analysis;
     }
 
     public LogAnalysis processLog(Scan scan,
@@ -136,7 +113,8 @@ public class ReportService {
         }
 
         String aiResponse = ragService.analyze(logContent);
-        LogAnalysisResult result = parseAIResponse(aiResponse);
+        LogAnalysisResult result =
+                aiResponseParser.parse(aiResponse);
 
         LogAnalysis analysis = new LogAnalysis();
 
@@ -186,27 +164,16 @@ public class ReportService {
         String normalizedMessage = logNormalizer.normalize(logContent);
         String normalizedHash = logNormalizer.generateHash(normalizedMessage);
 
-        LogAnalysisResult result = parseAIResponse(aiResponse);
+        LogAnalysisResult result =
+                aiResponseParser.parse(aiResponse);
 
-        LogAnalysis analysis = new LogAnalysis();
-        analysis.setScan(scan);
-        analysis.setLogContent(logContent);
-        analysis.setNormalizedMessage(normalizedMessage);
-        analysis.setNormalizedHash(normalizedHash);
-        analysis.setSeverity(severity);
-        analysis.setProblem(result.getProblem());
-        analysis.setCause(result.getCause());
-        analysis.setSolution(result.getSolution());
-        analysis.setOccurrenceCount(1);
-        analysis.setAnalyzedAt(LocalDateTime.now());
-        analysis.setLastSeenAt(LocalDateTime.now());
-
-        analysis.setPriority(
-                priorityService.determinePriority(
-                        severity,
-                        result.getProblem(),
-                        logContent
-                )
+        LogAnalysis analysis = buildAnalysis(
+                scan,
+                logContent,
+                severity,
+                normalizedMessage,
+                normalizedHash,
+                result
         );
 
         return repository.save(analysis);
@@ -278,5 +245,38 @@ public class ReportService {
         String normalized = logNormalizer.normalize(logContent);
         String hash = logNormalizer.generateHash(normalized);
         return repository.existsByNormalizedHash(hash);
+    }
+    public List<LogAnalysisResponse> getAllLogs(Language language) {
+
+        return repository.findAllByOrderByAnalyzedAtDesc()
+                .stream()
+                .map(log -> {
+
+                    LogAnalysisTranslation translation =
+                            translationService.getOrCreateTranslation(
+                                    log,
+                                    language
+                            );
+
+                    LogAnalysisResponse response =
+                            new LogAnalysisResponse();
+
+                    response.setId(log.getId());
+                    response.setLogContent(log.getLogContent());
+                    response.setSeverity(log.getSeverity());
+
+                    response.setProblem(translation.getProblem());
+                    response.setCause(translation.getCause());
+                    response.setSolution(translation.getSolution());
+
+                    response.setPriority(log.getPriority());
+                    response.setOccurrenceCount(log.getOccurrenceCount());
+                    response.setAnalyzedAt(log.getAnalyzedAt());
+                    response.setLastSeenAt(log.getLastSeenAt());
+
+                    return response;
+
+                })
+                .toList();
     }
 }

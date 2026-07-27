@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { changePassword } from '../services/api';
 
 function Settings() {
     const { user } = useAuth();
+    const { t } = useLanguage();
 
     // Password Change State
     const [currentPassword, setCurrentPassword] = useState('');
@@ -65,8 +67,8 @@ function Settings() {
     return (
         <div className="container-fluid p-4">
             <div className="mb-4">
-                <h2 className="fw-bold mb-1">Account & System Settings</h2>
-                <p className="text-muted small mb-0">Manage profile credentials, BCrypt security password, and real-time Slack integrations</p>
+                <h2 className="fw-bold mb-1">{t('settingsTitle')}</h2>
+                <p className="text-muted small mb-0">{t('settingsSub')}</p>
             </div>
 
             <div className="row g-4">
@@ -74,7 +76,7 @@ function Settings() {
                 <div className="col-lg-6">
                     {/* User Profile Info Card */}
                     <div className="card shadow-sm border-0 rounded-4 p-4 mb-4">
-                        <h5 className="fw-bold mb-3">👤 User Profile Details</h5>
+                        <h5 className="fw-bold mb-3">👤 {t('userProfile')}</h5>
                         <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
                             <div className="bg-primary bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-3 shadow" style={{ width: '64px', height: '64px' }}>
                                 {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
@@ -89,27 +91,27 @@ function Settings() {
 
                         <div className="row g-3">
                             <div className="col-md-6">
-                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">Username</label>
+                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">{t('username')}</label>
                                 <div className="p-2 bg-body-tertiary rounded-3 fw-semibold border">
                                     {user?.username || 'admin'}
                                 </div>
                             </div>
                             <div className="col-md-6">
-                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">Email Address</label>
+                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">{t('email')}</label>
                                 <div className="p-2 bg-body-tertiary rounded-3 fw-semibold border">
                                     {user?.email || 'admin@teknokent.com'}
                                 </div>
                             </div>
                             <div className="col-md-6">
-                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">Account Status</label>
+                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">{t('accountStatus')}</label>
                                 <div className="p-2 bg-body-tertiary rounded-3 fw-semibold text-success border">
-                                    ● Active & Verified
+                                    {t('activeVerified')}
                                 </div>
                             </div>
                             <div className="col-md-6">
-                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">Password Protection</label>
+                                <label className="text-muted small fw-bold text-uppercase d-block mb-1">{t('pwdProtection')}</label>
                                 <div className="p-2 bg-body-tertiary rounded-3 fw-semibold border">
-                                    BCrypt Hashed (256-bit)
+                                    {t('bcryptHashed')}
                                 </div>
                             </div>
                         </div>
@@ -117,7 +119,7 @@ function Settings() {
 
                     {/* Change Password Card (Connected to Real Backend) */}
                     <div className="card shadow-sm border-0 rounded-4 p-4">
-                        <h5 className="fw-bold mb-3">🔒 Security & Password Update</h5>
+                        <h5 className="fw-bold mb-3">🔒 {t('securityUpdate')}</h5>
                         
                         {passwordMsg.text && (
                             <div className={`alert alert-${passwordMsg.type} rounded-3 py-2 px-3 small mb-3`}>
@@ -127,7 +129,7 @@ function Settings() {
 
                         <form onSubmit={handlePasswordChange}>
                             <div className="mb-3">
-                                <label className="form-label small text-muted fw-bold">Current Password</label>
+                                <label className="form-label small text-muted fw-bold">{t('currentPassword')}</label>
                                 <input 
                                     type="password" 
                                     className="form-control" 
@@ -139,11 +141,11 @@ function Settings() {
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label small text-muted fw-bold">New Password</label>
+                                <label className="form-label small text-muted fw-bold">{t('newPassword')}</label>
                                 <input 
                                     type="password" 
                                     className="form-control" 
-                                    placeholder="Enter at least 6 characters"
+                                    placeholder="••••••••"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
@@ -151,11 +153,11 @@ function Settings() {
                             </div>
 
                             <div className="mb-4">
-                                <label className="form-label small text-muted fw-bold">Confirm New Password</label>
+                                <label className="form-label small text-muted fw-bold">{t('confirmPassword')}</label>
                                 <input 
                                     type="password" 
                                     className="form-control" 
-                                    placeholder="Re-enter new password"
+                                    placeholder="••••••••"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
@@ -170,9 +172,9 @@ function Settings() {
                                 {updatingPassword ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Updating Password...
+                                        {t('updatingPassword')}
                                     </>
-                                ) : 'Update Password (DB)'}
+                                ) : t('updatePassword')}
                             </button>
                         </form>
                     </div>
@@ -181,9 +183,9 @@ function Settings() {
                 {/* Right Column: Real Slack Incident Webhook Integration */}
                 <div className="col-lg-6">
                     <div className="card shadow-sm border-0 rounded-4 p-4 h-100">
-                        <h5 className="fw-bold mb-3">💬 Slack Incident Webhook Integration</h5>
+                        <h5 className="fw-bold mb-3">💬 {t('slackIntegration')}</h5>
                         <p className="text-muted small mb-4">
-                            Connect your team's Slack channel to receive real-time incident notifications when HIGH or CRITICAL severity errors occur
+                            {t('slackSub')}
                         </p>
 
                         {slackMsg.text && (
@@ -196,7 +198,7 @@ function Settings() {
                             <div className="d-flex align-items-center justify-content-between mb-3">
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="fs-4">📢</span>
-                                    <h6 className="fw-bold mb-0">Slack Alert Status</h6>
+                                    <h6 className="fw-bold mb-0">{t('slackStatus')}</h6>
                                 </div>
                                 <div className="form-check form-switch fs-4">
                                     <input 
@@ -209,12 +211,12 @@ function Settings() {
                                 </div>
                             </div>
                             <span className={`badge ${slackEnabled ? 'bg-success' : 'bg-secondary'}`}>
-                                {slackEnabled ? '● Slack Channel Active' : '○ Slack Notifications Disabled'}
+                                {slackEnabled ? t('slackActive') : t('slackDisabled')}
                             </span>
                         </div>
 
                         <div className="mb-4">
-                            <label className="form-label small text-muted fw-bold">Slack Incoming Webhook URL</label>
+                            <label className="form-label small text-muted fw-bold">{t('webhookUrlLabel')}</label>
                             <input 
                                 type="text" 
                                 className="form-control font-monospace small" 
@@ -223,7 +225,7 @@ function Settings() {
                                 onChange={(e) => setWebhookUrl(e.target.value)}
                             />
                             <small className="text-muted d-block mt-1">
-                                High and Critical log errors will automatically send JSON payload alerts to this Webhook endpoint.
+                                {t('webhookDesc')}
                             </small>
                         </div>
 
@@ -236,9 +238,9 @@ function Settings() {
                                 {savingSlack ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Testing & Saving Slack URL...
+                                        {t('savingSlack')}
                                     </>
-                                ) : 'Save Slack Integration'}
+                                ) : t('saveSlack')}
                             </button>
                         </div>
                     </div>

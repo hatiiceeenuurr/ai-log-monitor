@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { resetAllLogData } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 function Scan() {
+    const { t } = useLanguage();
     const [resetting, setResetting] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -25,8 +27,8 @@ function Scan() {
     return (
         <div className="container-fluid p-4">
             <div className="mb-4">
-                <h2 className="fw-bold mb-1">Scan Scheduler & System Status</h2>
-                <p className="text-muted small mb-0">Automated log ingestion, pattern deduplication, and retention policies</p>
+                <h2 className="fw-bold mb-1">{t('scanTitle')}</h2>
+                <p className="text-muted small mb-0">{t('scanSub')}</p>
             </div>
 
             {message && (
@@ -42,9 +44,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-primary bg-opacity-10 text-primary rounded-3 fs-3">⏱️</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Ingestion Interval</small>
-                                <h5 className="fw-bold mb-0">Every 15 Mins</h5>
-                                <span className="badge bg-success mt-1">Active Scheduler</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('ingestionInterval')}</small>
+                                <h5 className="fw-bold mb-0">{t('every15Mins')}</h5>
+                                <span className="badge bg-success mt-1">{t('activeScheduler')}</span>
                             </div>
                         </div>
                     </div>
@@ -55,9 +57,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-success bg-opacity-10 text-success rounded-3 fs-3">🛡️</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Truncate Strategy</small>
-                                <h5 className="fw-bold mb-0">Atomic TRUNCATE</h5>
-                                <span className="badge bg-info text-dark mt-1">Zero Log Loss</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('truncateStrategy')}</small>
+                                <h5 className="fw-bold mb-0">{t('atomicTruncate')}</h5>
+                                <span className="badge bg-info text-dark mt-1">{t('zeroLogLoss')}</span>
                             </div>
                         </div>
                     </div>
@@ -68,9 +70,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-warning bg-opacity-10 text-warning rounded-3 fs-3">🧠</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Deduplication</small>
-                                <h5 className="fw-bold mb-0">SHA-256 Hash</h5>
-                                <span className="badge bg-primary mt-1">Pattern Counter</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('deduplication')}</small>
+                                <h5 className="fw-bold mb-0">{t('sha256Hash')}</h5>
+                                <span className="badge bg-primary mt-1">{t('patternCounter')}</span>
                             </div>
                         </div>
                     </div>
@@ -81,9 +83,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-danger bg-opacity-10 text-danger rounded-3 fs-3">📅</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Retention Policy</small>
-                                <h5 className="fw-bold mb-0">14 Days Clean</h5>
-                                <span className="badge bg-secondary mt-1">Nightly Cleanup</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('retentionPolicy')}</small>
+                                <h5 className="fw-bold mb-0">{t('clean14Days')}</h5>
+                                <span className="badge bg-secondary mt-1">{t('nightlyCleanup')}</span>
                             </div>
                         </div>
                     </div>
@@ -91,9 +93,9 @@ function Scan() {
             </div>
 
             <div className="card shadow-sm border-0 rounded-4 p-4 mb-4">
-                <h5 className="fw-bold mb-3">🛠️ Admin Maintenance & Database Management</h5>
+                <h5 className="fw-bold mb-3">{t('adminMaintenance')}</h5>
                 <p className="text-muted small">
-                    Use this administrative action to reset all historical log analyses, PGVector embeddings, and scan records if you wish to restart monitoring from a clean state.
+                    {t('adminDesc')}
                 </p>
                 <div>
                     <button 
@@ -104,9 +106,9 @@ function Scan() {
                         {resetting ? (
                             <>
                                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                Resetting Database...
+                                {t('resettingDb')}
                             </>
-                        ) : 'Reset Database Records (TRUNCATE)'}
+                        ) : t('resetDb')}
                     </button>
                 </div>
             </div>

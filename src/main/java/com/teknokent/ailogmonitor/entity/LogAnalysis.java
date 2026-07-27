@@ -5,6 +5,8 @@ import com.teknokent.ailogmonitor.priority.Priority;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "log_analysis", indexes = {
@@ -53,6 +55,15 @@ public class LogAnalysis {
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
+
+    @OneToMany(
+            mappedBy = "logAnalysis",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    @JsonIgnore
+    private List<LogAnalysisTranslation> translations = new ArrayList<>();
 
     public LogAnalysis() {
     }
@@ -155,5 +166,13 @@ public class LogAnalysis {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public List<LogAnalysisTranslation> getTranslations() {
+        return translations;
+    }
+
+    public void setTranslations(List<LogAnalysisTranslation> translations) {
+        this.translations = translations;
     }
 }

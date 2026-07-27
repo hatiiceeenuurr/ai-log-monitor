@@ -1,29 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 function HealthBar() {
-    const [status, setStatus] = useState({
-        backend: 'live',
-        db: 'connected',
-        ai: 'active',
-        mail: 'ready'
-    });
+    const { t } = useLanguage();
 
     return (
         <div className="d-none d-md-flex align-items-center gap-2 px-3 py-1 rounded-pill health-bar-container shadow-sm">
             <span className="health-badge text-success">
-                <i className="bi bi-circle-fill me-1 pulse-dot"></i> API Port 8081
+                <i className="bi bi-circle-fill me-1 pulse-dot"></i> {t('port')} 8081
             </span>
             <span className="health-divider">|</span>
             <span className="health-badge text-info">
-                <i className="bi bi-database-fill me-1"></i> PostgreSQL
+                <i className="bi bi-database-fill me-1"></i> {t('postgres')}
             </span>
             <span className="health-divider">|</span>
             <span className="health-badge text-warning">
-                <i className="bi bi-cpu-fill me-1"></i> Ollama AI
+                <i className="bi bi-cpu-fill me-1"></i> {t('ollama')}
             </span>
             <span className="health-divider">|</span>
             <span className="health-badge text-primary">
-                <i className="bi bi-envelope-check-fill me-1"></i> Gmail SMTP
+                <i className="bi bi-envelope-check-fill me-1"></i> {t('gmailSmtp')}
             </span>
         </div>
     );

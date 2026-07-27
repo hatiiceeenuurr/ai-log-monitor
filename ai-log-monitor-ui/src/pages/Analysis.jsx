@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { getLogsPaginated } from '../services/api';
 import LogDetailModal from '../components/modals/LogDetailModal';
 import { exportLogsToCSV } from '../utils/exportUtils';
+import { useLanguage } from '../context/LanguageContext';
 
 function Analysis() {
+    const { t } = useLanguage();
     const [pageData, setPageData] = useState({ content: [], totalPages: 0, totalElements: 0 });
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
@@ -64,14 +66,14 @@ function Analysis() {
         <div className="container-fluid p-4">
             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
-                    <h2 className="mb-0 fw-bold">Historical Log Analysis Records</h2>
-                    <small className="text-muted">Total {pageData.totalElements || 0} analyses registered</small>
+                    <h2 className="mb-0 fw-bold">{t('analysisTitle')}</h2>
+                    <small className="text-muted">{t('analysisSub')}</small>
                 </div>
                 <button
                     className="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
                     onClick={() => exportLogsToCSV(filteredLogs, 'historical_log_analysis.csv')}
                 >
-                    <span>📥</span> Export CSV Report
+                    <span>📥</span> {t('exportCsv')}
                 </button>
             </div>
 
@@ -80,7 +82,7 @@ function Analysis() {
                     <input 
                         type="text" 
                         className="form-control" 
-                        placeholder="Search by problem, content or solution..." 
+                        placeholder={t('searchLogs')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -91,10 +93,10 @@ function Analysis() {
                         value={filterSeverity}
                         onChange={(e) => setFilterSeverity(e.target.value)}
                     >
-                        <option value="ALL">All Severities</option>
-                        <option value="ERROR">ERROR</option>
-                        <option value="WARN">WARN</option>
-                        <option value="INFO">INFO</option>
+                        <option value="ALL">{t('allSeverity')}</option>
+                        <option value="ERROR">{t('errorSeverity')}</option>
+                        <option value="WARN">{t('warnSeverity')}</option>
+                        <option value="INFO">{t('infoSeverity')}</option>
                     </select>
                 </div>
                 <div className="col-md-2">
@@ -103,10 +105,9 @@ function Analysis() {
                         value={pageSize}
                         onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
                     >
-                        <option value="5">5 / Page</option>
-                        <option value="10">10 / Page</option>
-                        <option value="20">20 / Page</option>
-                        <option value="50">50 / Page</option>
+                        <option value="10">10 / {t('perPage')}</option>
+                        <option value="20">20 / {t('perPage')}</option>
+                        <option value="50">50 / {t('perPage')}</option>
                     </select>
                 </div>
             </div>
@@ -119,7 +120,7 @@ function Analysis() {
                 </div>
             ) : filteredLogs.length === 0 ? (
                 <div className="alert alert-info text-center shadow-sm border-0 rounded-3">
-                    No matching log records found.
+                    {t('noLogsFound')}
                 </div>
             ) : (
                 <>
@@ -132,11 +133,11 @@ function Analysis() {
                                             {getSeverityBadge(log.severity)}
                                             <span className="ms-2 badge bg-secondary">{log.priority || 'NORMAL'}</span>
                                             <span className={`ms-2 badge ${log.occurrenceCount > 1 ? 'bg-primary' : 'bg-outline-secondary'}`}>
-                                                {log.occurrenceCount || 1}x Repeats
+                                                {log.occurrenceCount || 1}x {t('repeats')}
                                             </span>
                                             <span className="ms-2 text-muted small">
-                                                First: {new Date(log.analyzedAt).toLocaleString('en-US')}
-                                                {log.lastSeenAt && ` | Last: ${new Date(log.lastSeenAt).toLocaleString('en-US')}`}
+                                                {t('firstSeen')}: {new Date(log.analyzedAt).toLocaleString()}
+                                                {log.lastSeenAt && ` | ${t('lastSeen')}: ${new Date(log.lastSeenAt).toLocaleString()}`}
                                             </span>
                                         </div>
                                         <div className="d-flex align-items-center gap-2">
@@ -145,23 +146,23 @@ function Analysis() {
                                                     className="btn btn-sm btn-outline-success rounded-pill px-3 copy-btn"
                                                     onClick={() => handleCopySolution(log.id, log.solution)}
                                                 >
-                                                    {copiedId === log.id ? 'Copied! ✓' : '📋 Copy Solution'}
+                                                    {copiedId === log.id ? t('copied') : t('copySolution')}
                                                 </button>
                                             )}
                                             <button 
                                                 className="btn btn-sm btn-outline-primary rounded-pill px-3" 
                                                 onClick={() => setSelectedLog(log)}
                                             >
-                                                Inspect Details 🔍
+                                                {t('viewDetails')} 🔍
                                             </button>
                                         </div>
                                     </div>
                                     <div className="card-body">
-                                        <h6 className="card-title text-danger mb-2">Problem: {log.problem}</h6>
-                                        {log.cause && <p className="card-text mb-1"><strong>Cause:</strong> {log.cause}</p>}
+                                        <h6 className="card-title text-danger mb-2">{t('normProblem')}: {log.problem}</h6>
+                                        {log.cause && <p className="card-text mb-1"><strong>{t('rootCause')}:</strong> {log.cause}</p>}
                                         {log.solution && (
                                             <div className="mb-3">
-                                                <strong className="text-success small d-block mb-1">Recommended AI Solution:</strong>
+                                                <strong className="text-success small d-block mb-1">{t('recSolution')}:</strong>
                                                 <div className="solution-code-box">
                                                     <code>{log.solution}</code>
                                                 </div>
@@ -176,18 +177,17 @@ function Analysis() {
                         ))}
                     </div>
 
-                    {/* Pagination Controls */}
                     <div className="d-flex justify-content-between align-items-center mt-4">
                         <button 
                             className="btn btn-outline-secondary btn-sm rounded-pill px-3"
                             disabled={page === 0}
                             onClick={() => setPage(p => Math.max(0, p - 1))}
                         >
-                            &laquo; Previous Page
+                            &laquo; {t('prev')}
                         </button>
 
                         <span className="small text-muted fw-semibold">
-                            Page {page + 1} of {pageData.totalPages || 1}
+                            {t('page')} {page + 1} {t('of')} {pageData.totalPages || 1}
                         </span>
 
                         <button 
@@ -195,7 +195,7 @@ function Analysis() {
                             disabled={page >= (pageData.totalPages - 1)}
                             onClick={() => setPage(p => p + 1)}
                         >
-                            Next Page &raquo;
+                            {t('next')} &raquo;
                         </button>
                     </div>
                 </>

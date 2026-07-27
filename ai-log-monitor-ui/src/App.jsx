@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import MainLayout from "./layouts/MainLayout";
@@ -14,26 +15,28 @@ import Settings from "./pages/Settings";
 function App() {
   return (
       <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public Login Route */}
-              <Route path="/login" element={<Login />} />
+        <LanguageProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public Login Route */}
+                <Route path="/login" element={<Login />} />
 
-              {/* Protected Routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<MainLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="analysis" element={<Analysis />} />
-                  <Route path="rag" element={<RagSearch />} />
-                  <Route path="scan" element={<Scan />} />
-                  <Route path="settings" element={<Settings />} />
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<MainLayout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="analysis" element={<Analysis />} />
+                    <Route path="rag" element={<RagSearch />} />
+                    <Route path="scan" element={<Scan />} />
+                    <Route path="settings" element={<Settings />} />
+                  </Route>
                 </Route>
-              </Route>
 
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
   );
 }

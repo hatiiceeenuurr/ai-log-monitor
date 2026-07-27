@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import HealthBar from "../common/HealthBar";
 import { requestNotificationPermission, sendDesktopNotification } from "../../utils/notificationUtils";
@@ -8,6 +9,7 @@ import { requestNotificationPermission, sendDesktopNotification } from "../../ut
 function Navbar() {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [notifGranted, setNotifGranted] = useState(() => 'Notification' in window && Notification.permission === 'granted');
@@ -20,13 +22,13 @@ function Navbar() {
 
         if (Notification.permission === 'granted') {
             setNotifGranted(true);
-            alert("Desktop notifications are ALREADY ACTIVE! 🔔\n\nYour browser has already allowed notifications. Windows will pop up desktop alerts for critical log incidents.");
+            alert(language === 'tr' ? "Masaüstü bildirimleri ZATEN AKTİF! 🔔\n\nTarayıcınız bildirimlere izin vermiş. Kritik hatalarda Windows masaüstü bildirimi açılacaktır." : "Desktop notifications are ALREADY ACTIVE! 🔔\n\nYour browser has already allowed notifications. Windows will pop up desktop alerts for critical log incidents.");
             sendDesktopNotification("AI Log Monitor Alerts Active 🔔", "Windows desktop notifications are active and ready.");
             return;
         }
 
         if (Notification.permission === 'denied') {
-            alert("Desktop notifications are blocked by your browser settings for localhost.\n\nPlease click the Lock 🔒 icon next to http://localhost:5173 in your browser URL bar and set Notifications to 'Allow'.");
+            alert(language === 'tr' ? "Masaüstü bildirimleri tarayıcınız tarafından engellenmiş.\n\nLütfen http://localhost:5173 yanındaki ⓘ veya Kilit simgesine tıklayıp Bildirimleri 'İzin Ver' yapın." : "Desktop notifications are blocked by your browser settings for localhost.\n\nPlease click the Lock 🔒 icon next to http://localhost:5173 in your browser URL bar and set Notifications to 'Allow'.");
             return;
         }
 
@@ -53,7 +55,7 @@ function Navbar() {
                         onClick={() => navigate('/')}
                     >
                         <span className="fs-3">🤖</span>
-                        <span className="bg-gradient bg-primary text-white px-2 py-1 rounded-3">AI Log Monitor</span>
+                        <span className="bg-gradient bg-primary text-white px-2 py-1 rounded-3">{t('brand')}</span>
                     </span>
 
                     <HealthBar />
@@ -62,10 +64,19 @@ function Navbar() {
                         <button
                             className={`btn btn-sm rounded-pill px-3 d-flex align-items-center gap-1 ${notifGranted ? 'btn-outline-success' : 'btn-outline-warning'}`}
                             onClick={handleEnableNotif}
-                            title={notifGranted ? "Desktop notifications active" : "Click to enable Windows Desktop Alerts"}
+                            title={notifGranted ? t('alertsActive') : t('enableAlerts')}
                         >
                             <span>🔔</span>
-                            <span className="d-none d-md-inline fw-semibold">{notifGranted ? 'Alerts Active' : 'Enable Alerts'}</span>
+                            <span className="d-none d-md-inline fw-semibold">{notifGranted ? t('alertsActive') : t('enableAlerts')}</span>
+                        </button>
+
+                        <button
+                            className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1"
+                            onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')}
+                            title={`Switch Language (Current: ${language.toUpperCase()})`}
+                        >
+                            <span>🌐</span>
+                            <span>{language === 'en' ? '🇹🇷 TR' : '🇬🇧 EN'}</span>
                         </button>
 
                         <button
@@ -82,7 +93,7 @@ function Navbar() {
                                 className="d-flex align-items-center gap-2 bg-secondary bg-opacity-25 px-3 py-1 rounded-pill border border-secondary border-opacity-50"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => navigate('/settings')}
-                                title="Click to view Profile & Settings"
+                                title="Profile & Settings"
                             >
                                 <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '28px', height: '28px', fontSize: '13px' }}>
                                     {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
@@ -97,16 +108,16 @@ function Navbar() {
                         <button 
                             className="btn btn-outline-secondary btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
                             onClick={() => navigate('/settings')}
-                            title="Settings"
+                            title={t('navSettings')}
                         >
-                            <span>⚙️</span> <span className="d-none d-sm-inline">Settings</span>
+                            <span>⚙️</span> <span className="d-none d-sm-inline">{t('navSettings')}</span>
                         </button>
 
                         <button 
                             className="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
                             onClick={() => setShowLogoutModal(true)}
                         >
-                            <span>🚪</span> Logout
+                            <span>🚪</span> <span className="d-none d-sm-inline">{t('logout')}</span>
                         </button>
                     </div>
                 </div>
@@ -118,20 +129,20 @@ function Navbar() {
                     <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '400px' }}>
                         <div className="modal-content shadow-lg border-0 rounded-4">
                             <div className="modal-header bg-dark text-white rounded-top-4 border-bottom border-secondary border-opacity-25">
-                                <h5 className="modal-title fw-bold text-white fs-6">Confirm Logout</h5>
+                                <h5 className="modal-title fw-bold text-white fs-6">{t('confirmLogoutTitle')}</h5>
                                 <button type="button" className="btn-close btn-close-white" onClick={() => setShowLogoutModal(false)}></button>
                             </div>
                             <div className="modal-body p-4 text-center">
                                 <div className="display-4 text-warning mb-3">⚠️</div>
-                                <h6 className="fw-bold text-dark mb-2">Are you sure you want to log out?</h6>
-                                <p className="text-muted small mb-0">Your active monitoring session will be ended on this device.</p>
+                                <h6 className="fw-bold mb-2">{t('confirmLogoutTitle')}</h6>
+                                <p className="text-muted small mb-0">{t('confirmLogoutMsg')}</p>
                             </div>
                             <div className="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
                                 <button type="button" className="btn btn-secondary px-4 rounded-pill fw-semibold" onClick={() => setShowLogoutModal(false)}>
-                                    Cancel
+                                    {t('cancel')}
                                 </button>
                                 <button type="button" className="btn btn-danger px-4 rounded-pill fw-bold" onClick={handleConfirmLogout}>
-                                    Yes, Logout 🚪
+                                    {t('logout')} 🚪
                                 </button>
                             </div>
                         </div>

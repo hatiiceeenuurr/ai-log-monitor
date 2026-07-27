@@ -6,8 +6,10 @@ import TrendChart from "../components/charts/TrendChart";
 import { getDashboardData, subscribeToLogStream } from "../services/api";
 import { exportLogsToCSV } from "../utils/exportUtils";
 import { sendDesktopNotification } from "../utils/notificationUtils";
+import { useLanguage } from "../context/LanguageContext";
 
 function Dashboard() {
+    const { t } = useLanguage();
     const [data, setData] = useState({
         totalLogs: 0,
         errorCount: 0,
@@ -74,7 +76,7 @@ function Dashboard() {
         <div className="container-fluid p-4">
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                 <div>
-                    <h2 className="mb-0 fw-bold">AI Log Monitor Dashboard</h2>
+                    <h2 className="mb-0 fw-bold">{t('dashTitle')}</h2>
                     <small className="text-success fw-bold">
                         <i className="bi bi-broadcast pulse-dot me-1"></i> Live SSE Stream Active
                     </small>
@@ -85,14 +87,14 @@ function Dashboard() {
                         onClick={() => exportLogsToCSV(filteredLogs, 'dashboard_recent_logs.csv')}
                         title="Download CSV Report"
                     >
-                        <span>📥</span> Export CSV
+                        <span>📥</span> {t('exportCsv')}
                     </button>
                     <button 
                         className="btn btn-outline-primary btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
                         onClick={loadDashboard}
                         disabled={loading}
                     >
-                        {loading ? 'Loading...' : '🔄 Refresh'}
+                        {loading ? '...' : '🔄 Refresh'}
                     </button>
                 </div>
             </div>
@@ -106,31 +108,31 @@ function Dashboard() {
 
             {error && (
                 <div className="alert alert-warning shadow-sm border-0 rounded-3" role="alert">
-                    {error} (Please check if the backend service is running)
+                    {error}
                 </div>
             )}
 
             <div className="row g-3 mb-4">
                 <StatCard
-                    title="Total Analyses"
+                    title={t('totalLogs')}
                     value={data.totalLogs || 0}
                     color="primary"
                 />
 
                 <StatCard
-                    title="Errors (Error)"
+                    title={t('criticalIncidents')}
                     value={data.errorCount || 0}
                     color="danger"
                 />
 
                 <StatCard
-                    title="Warnings (Warn)"
+                    title={t('warningAlerts')}
                     value={data.warnCount || 0}
                     color="warning"
                 />
 
                 <StatCard
-                    title="Information (Info)"
+                    title={t('infoLogs')}
                     value={data.infoCount || 0}
                     color="success"
                 />

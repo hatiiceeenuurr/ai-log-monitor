@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { searchLogs } from '../services/api';
 import LogDetailModal from '../components/modals/LogDetailModal';
+import { useLanguage } from '../context/LanguageContext';
 
 function RagSearch() {
+    const { t } = useLanguage();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -41,31 +43,31 @@ function RagSearch() {
     const getSimilarityBadge = (score) => {
         const percentage = score ? score.toFixed(1) : "0.0";
         if (score >= 80) {
-            return <span className="badge bg-success bg-gradient px-3 py-2 fs-6">🎯 {percentage}% Similarity Match</span>;
+            return <span className="badge bg-success bg-gradient px-3 py-2 fs-6">🎯 {percentage}% {t('similarityMatch')}</span>;
         } else if (score >= 60) {
-            return <span className="badge bg-primary bg-gradient px-3 py-2 fs-6">🔍 {percentage}% Semantic Match</span>;
+            return <span className="badge bg-primary bg-gradient px-3 py-2 fs-6">🔍 {percentage}% {t('similarityMatch')}</span>;
         } else {
-            return <span className="badge bg-secondary bg-gradient px-3 py-2 fs-6">⚡ {percentage}% Low Match</span>;
+            return <span className="badge bg-secondary bg-gradient px-3 py-2 fs-6">⚡ {percentage}% {t('similarityMatch')}</span>;
         }
     };
 
     return (
         <div className="container-fluid p-4">
             <div className="mb-4">
-                <h2 className="fw-bold text-dark mb-1">Semantic RAG Search</h2>
-                <p className="text-muted small mb-0">Query PGVector database using 768-dimensional AI vector embeddings</p>
+                <h2 className="fw-bold mb-1">{t('ragTitle')}</h2>
+                <p className="text-muted small mb-0">{t('ragSub')}</p>
             </div>
 
             {/* Search Input Box */}
-            <div className="card shadow-sm border-0 rounded-4 mb-4 bg-white p-3">
+            <div className="card shadow-sm border-0 rounded-4 mb-4 p-3">
                 <div className="card-body">
                     <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                         <div className="input-group input-group-lg mb-3">
-                            <span className="input-group-text bg-light border-end-0">🔍</span>
+                            <span className="input-group-text border-end-0">🔍</span>
                             <input 
                                 type="text" 
-                                className="form-control bg-light border-start-0 shadow-none" 
-                                placeholder="Enter an error message, stack trace, or problem description to search vector DB..."
+                                className="form-control border-start-0 shadow-none" 
+                                placeholder={t('searchPlaceholder')}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                             />
@@ -86,16 +88,16 @@ function RagSearch() {
                                 {loading ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Searching Vector DB...
+                                        {t('searching')}
                                     </>
-                                ) : 'Search Vector DB'}
+                                ) : t('searchBtn')}
                             </button>
                         </div>
                     </form>
 
                     {/* Quick Sample Queries */}
                     <div>
-                        <small className="text-muted fw-bold d-block mb-2">🚀 One-Click Sample Vector Queries:</small>
+                        <small className="text-muted fw-bold d-block mb-2">{t('quickSamples')}</small>
                         <div className="d-flex flex-wrap gap-2">
                             {sampleQueries.map((sample, idx) => (
                                 <button 
@@ -114,14 +116,14 @@ function RagSearch() {
 
             {/* Results Section */}
             {loading ? (
-                <div className="text-center p-5 bg-white rounded-4 shadow-sm my-4">
+                <div className="text-center p-5 rounded-4 shadow-sm my-4">
                     <div className="spinner-border text-primary me-2" style={{ width: '3rem', height: '3rem' }} role="status"></div>
-                    <p className="mt-3 text-muted fw-semibold">Generating query vector embedding & searching PGVector HNSW index...</p>
+                    <p className="mt-3 text-muted fw-semibold">{t('searching')}</p>
                 </div>
             ) : searched && results.length === 0 ? (
                 <div className="alert alert-info rounded-4 p-4 text-center shadow-sm">
-                    <h5>No Related Logs Found</h5>
-                    <p className="mb-0 text-muted">No log entries matched the similarity threshold for query: "{query}"</p>
+                    <h5>{t('noLogsFound')}</h5>
+                    <p className="mb-0 text-muted">{t('noRagResults')}</p>
                 </div>
             ) : (
                 <div className="row g-4">
@@ -139,18 +141,18 @@ function RagSearch() {
                                             <span className="badge bg-secondary">{logItem.priority || 'NORMAL'}</span>
                                         </div>
                                         <button className="btn btn-sm btn-outline-light rounded-pill px-3" onClick={(e) => { e.stopPropagation(); setSelectedLog(logItem); }}>
-                                            Inspect Full Detail 🔍
+                                            {t('inspectDetail')}
                                         </button>
                                     </div>
-                                    <div className="card-body p-4 bg-white">
+                                    <div className="card-body p-4">
                                         <h5 className="card-title text-danger mb-3 fw-bold">
-                                            Problem: {logItem.problem || logItem.logContent}
+                                            {t('normProblem')}: {logItem.problem || logItem.logContent}
                                         </h5>
 
                                         {logItem.cause && (
                                             <div className="mb-3">
-                                                <small className="text-muted fw-bold text-uppercase">Probable Cause:</small>
-                                                <p className="card-text text-dark bg-light p-3 rounded-3 border-start border-4 border-warning mt-1">
+                                                <small className="text-muted fw-bold text-uppercase">{t('probableCause')}</small>
+                                                <p className="card-text text-body bg-body-tertiary p-3 rounded-3 border-start border-4 border-warning mt-1">
                                                     {logItem.cause}
                                                 </p>
                                             </div>
@@ -158,15 +160,15 @@ function RagSearch() {
 
                                         {logItem.solution && (
                                             <div className="mb-3">
-                                                <small className="text-muted fw-bold text-uppercase">Recommended Solution (AI RAG Knowledge Base):</small>
-                                                <p className="card-text text-success bg-light p-3 rounded-3 border-start border-4 border-success mt-1 font-monospace small">
+                                                <small className="text-muted fw-bold text-uppercase">{t('ragRecSolution')}</small>
+                                                <p className="card-text text-success bg-body-tertiary p-3 rounded-3 border-start border-4 border-success mt-1 font-monospace small">
                                                     {logItem.solution}
                                                 </p>
                                             </div>
                                         )}
 
                                         <div>
-                                            <small className="text-muted fw-bold text-uppercase">Matched Log Pattern:</small>
+                                            <small className="text-muted fw-bold text-uppercase">{t('matchedPattern')}</small>
                                             <pre className="p-3 bg-dark text-light rounded-3 font-monospace small mb-0 mt-1" style={{ overflowX: 'auto' }}>
                                                 <code>{logItem.logContent}</code>
                                             </pre>

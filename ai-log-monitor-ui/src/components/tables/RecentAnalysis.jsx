@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import LogDetailModal from '../modals/LogDetailModal';
+import { useLanguage } from '../../context/LanguageContext';
 
 function RecentAnalysis({ logs = [] }) {
+    const { t } = useLanguage();
     const [selectedLog, setSelectedLog] = useState(null);
 
     const getSeverityBadge = (severity) => {
@@ -33,34 +35,34 @@ function RecentAnalysis({ logs = [] }) {
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleString('en-US');
+        return new Date(dateString).toLocaleString();
     };
 
     return (
         <>
             <div className="card shadow-sm mt-4 border-0 rounded-3 overflow-hidden">
                 <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                    <h5 className="mb-0 fw-bold fs-6 text-white">Recent Log Analysis Records</h5>
-                    <span className="badge bg-secondary rounded-pill px-3">{logs.length} Records</span>
+                    <h5 className="mb-0 fw-bold fs-6 text-white">{t('recentAnalyses')}</h5>
+                    <span className="badge bg-secondary rounded-pill px-3">{logs.length} {t('tbCount')}</span>
                 </div>
 
                 <div className="card-body p-0">
                     {logs.length === 0 ? (
                         <div className="p-4 text-center text-muted">
-                            No analysis records found yet.
+                            {t('noLogsFound')}
                         </div>
                     ) : (
                         <div className="table-responsive">
                             <table className="table table-hover mb-0 align-middle">
                                 <thead className="table-light text-uppercase small text-muted">
                                     <tr>
-                                        <th>Date / Last Seen</th>
-                                        <th>Severity</th>
+                                        <th>{t('tbTimestamp')}</th>
+                                        <th>{t('tbSeverity')}</th>
                                         <th>Priority</th>
-                                        <th>Repeats</th>
-                                        <th>Problem Description</th>
-                                        <th>Solution</th>
-                                        <th className="text-end">Action</th>
+                                        <th>{t('repeats')}</th>
+                                        <th>{t('tbProblem')}</th>
+                                        <th>{t('tbSolution')}</th>
+                                        <th className="text-end">{t('tbActions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -76,11 +78,11 @@ function RecentAnalysis({ logs = [] }) {
                                                     {log.occurrenceCount || 1}x
                                                 </span>
                                             </td>
-                                            <td className="fw-semibold text-dark">{log.problem || log.logContent}</td>
+                                            <td className="fw-semibold">{log.problem || log.logContent}</td>
                                             <td className="small text-secondary">{log.solution ? (log.solution.length > 60 ? log.solution.substring(0, 60) + '...' : log.solution) : '-'}</td>
                                             <td className="text-end">
                                                 <button className="btn btn-sm btn-outline-primary rounded-pill px-3" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
-                                                    Inspect 🔍
+                                                    {t('viewDetails')} 🔍
                                                 </button>
                                             </td>
                                         </tr>

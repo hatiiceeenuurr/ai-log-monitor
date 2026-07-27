@@ -1,4 +1,7 @@
+import { useLanguage } from '../../context/LanguageContext';
+
 function LogDetailModal({ log, onClose }) {
+    const { t } = useLanguage();
     if (!log) return null;
 
     return (
@@ -11,23 +14,23 @@ function LogDetailModal({ log, onClose }) {
                                 {log.severity}
                             </span>
                             <span className="badge bg-secondary">{log.priority || 'NORMAL'}</span>
-                            <h5 className="modal-title mb-0 ms-2 text-white">Log Analysis Detail #{log.id}</h5>
+                            <h5 className="modal-title mb-0 ms-2 text-white">{t('modalTitle')} #{log.id}</h5>
                         </div>
                         <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
                     </div>
 
                     <div className="modal-body p-4">
                         <div className="mb-3">
-                            <label className="text-muted small fw-bold uppercase">Problem Description</label>
-                            <div className="p-3 bg-light border-start border-4 border-danger rounded-3 fw-semibold text-danger">
+                            <label className="text-muted small fw-bold uppercase">{t('normProblem')}</label>
+                            <div className="p-3 bg-body-tertiary border-start border-4 border-danger rounded-3 fw-semibold text-danger">
                                 {log.problem || log.logContent}
                             </div>
                         </div>
 
                         {log.cause && (
                             <div className="mb-3">
-                                <label className="text-muted small fw-bold uppercase">Probable Cause</label>
-                                <div className="p-3 bg-light border-start border-4 border-warning rounded-3 text-dark">
+                                <label className="text-muted small fw-bold uppercase">{t('rootCause')}</label>
+                                <div className="p-3 bg-body-tertiary border-start border-4 border-warning rounded-3">
                                     {log.cause}
                                 </div>
                             </div>
@@ -35,8 +38,8 @@ function LogDetailModal({ log, onClose }) {
 
                         {log.solution && (
                             <div className="mb-3">
-                                <label className="text-muted small fw-bold uppercase">Recommended Solution (AI RAG)</label>
-                                <div className="p-3 bg-light border-start border-4 border-success rounded-3 text-success font-monospace">
+                                <label className="text-muted small fw-bold uppercase">{t('recSolution')}</label>
+                                <div className="p-3 bg-body-tertiary border-start border-4 border-success rounded-3 text-success font-monospace">
                                     {log.solution}
                                 </div>
                             </div>
@@ -45,18 +48,18 @@ function LogDetailModal({ log, onClose }) {
                         <div className="row g-2 mb-3">
                             <div className="col-md-6">
                                 <div className="p-2 border rounded text-muted small">
-                                    <strong>First Analysis:</strong> {new Date(log.analyzedAt).toLocaleString('en-US')}
+                                    <strong>{t('firstSeen')}:</strong> {new Date(log.analyzedAt).toLocaleString()}
                                 </div>
                             </div>
                             <div className="col-md-6">
                                 <div className="p-2 border rounded text-muted small">
-                                    <strong>Repeat Count:</strong> {log.occurrenceCount || 1}x
+                                    <strong>{t('repeats')}:</strong> {log.occurrenceCount || 1}x
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <label className="text-muted small fw-bold uppercase">Raw Log Message</label>
+                            <label className="text-muted small fw-bold uppercase">{t('rawLogContent')}</label>
                             <pre className="p-3 bg-dark text-light rounded-3 font-monospace small mb-0" style={{ overflowX: 'auto' }}>
                                 <code>{log.logContent}</code>
                             </pre>
@@ -65,7 +68,7 @@ function LogDetailModal({ log, onClose }) {
 
                     <div className="modal-footer border-top-0">
                         <button type="button" className="btn btn-secondary px-4 rounded-pill" onClick={onClose}>
-                            Close
+                            {t('close')}
                         </button>
                     </div>
                 </div>

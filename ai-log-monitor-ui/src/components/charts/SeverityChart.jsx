@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
+    const { t } = useLanguage();
     const [hovered, setHovered] = useState(null);
 
     const total = critical + error + warn + info;
@@ -8,7 +10,7 @@ function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
         return (
             <div className="card shadow-sm border-0 h-100 p-4 text-center d-flex align-items-center justify-content-center">
                 <i className="bi bi-pie-chart text-muted display-4 mb-2"></i>
-                <p className="text-muted mb-0">No log severity data available yet.</p>
+                <p className="text-muted mb-0">{t('noLogsFound')}</p>
             </div>
         );
     }
@@ -33,10 +35,10 @@ function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="fw-bold mb-0 text-uppercase tracking-wider">
                     <i className="bi bi-pie-chart-fill me-2 text-primary"></i>
-                    Severity Distribution
+                    {t('severityBreakdown')}
                 </h6>
                 <span className="badge bg-secondary-subtle text-body rounded-pill px-3 py-1">
-                    {total} Total Logs
+                    {total} {t('tbCount')}
                 </span>
             </div>
 

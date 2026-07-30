@@ -45,4 +45,8 @@ public class DashboardService {
                 recentLogs
         );
     }
+
+    public List<Object[]> getDailyAnalysis() {
+        return logAnalysisRepository.getDailyAnalysisCounts();
+    }
 }

@@ -40,15 +40,14 @@ public class LogController {
     @GetMapping("/logs/page")
     public Page<LogAnalysis> getLogsPaginated(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "ALL") String severity,
+            @RequestParam(required = false, defaultValue = "") String search) {
         Pageable pageable = PageRequest.of(page, size);
-        return reportService.getLogsPaginated(pageable);
+        return reportService.getLogsPaginated(pageable, severity, search);
     }
 
-    @GetMapping("/dashboard/daily")
-    public List<DailyAnalysisDTO> getDailyAnalysis() {
-        return reportService.getDailyAnalysis();
-    }
+
 
     @GetMapping("/search")
     public List<SimilarLogResult> searchLogs(@RequestParam(defaultValue = "ERROR Database connection timeout") String query) {

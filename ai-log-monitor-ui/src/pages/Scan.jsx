@@ -5,11 +5,10 @@ function Scan() {
     const [resetting, setResetting] = useState(false);
     const [message, setMessage] = useState('');
 
-    const handleResetData = async () => {
-        if (!window.confirm("ARE YOU SURE? This will truncate all database log analysis records and vector embeddings.")) {
-            return;
-        }
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+    const executeReset = async () => {
+        setShowConfirmModal(false);
         try {
             setResetting(true);
             const res = await resetAllLogData();
@@ -98,7 +97,7 @@ function Scan() {
                 <div>
                     <button 
                         className="btn btn-outline-danger px-4 rounded-pill fw-bold"
-                        onClick={handleResetData}
+                        onClick={() => setShowConfirmModal(true)}
                         disabled={resetting}
                     >
                         {resetting ? (
@@ -110,6 +109,31 @@ function Scan() {
                     </button>
                 </div>
             </div>
+
+            {/* Confirm Reset Modal */}
+            {showConfirmModal && (
+                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content border-0 shadow-lg rounded-4">
+                            <div className="modal-header bg-danger text-white rounded-top-4 border-0">
+                                <h5 className="modal-title fw-bold">⚠️ Confirm Full Reset</h5>
+                                <button type="button" className="btn-close btn-close-white" onClick={() => setShowConfirmModal(false)}></button>
+                            </div>
+                            <div className="modal-body p-4 text-center">
+                                <div className="mb-3" style={{ fontSize: '4rem' }}>🗑️</div>
+                                <h4 className="fw-bold text-danger">Are you absolutely sure?</h4>
+                                <p className="text-muted mt-2">
+                                    This action will truncate <strong>all</strong> historical database log analysis records and vector embeddings. This action cannot be undone.
+                                </p>
+                            </div>
+                            <div className="modal-footer border-0 d-flex justify-content-center pb-4">
+                                <button type="button" className="btn btn-secondary rounded-pill px-4" onClick={() => setShowConfirmModal(false)}>Cancel</button>
+                                <button type="button" className="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onClick={executeReset}>Yes, Reset Everything</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

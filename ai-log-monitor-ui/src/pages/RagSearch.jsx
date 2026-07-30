@@ -7,6 +7,7 @@ function RagSearch() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
+    const [error, setError] = useState(null);
     const [selectedLog, setSelectedLog] = useState(null);
 
     const sampleQueries = [
@@ -23,10 +24,12 @@ function RagSearch() {
         try {
             setLoading(true);
             setSearched(true);
+            setError(null);
             const data = await searchLogs(searchQuery.trim());
             setResults(data || []);
         } catch (err) {
             console.error("Vector search failed:", err);
+            setError('Search failed. Please make sure the backend is running.');
             setResults([]);
         } finally {
             setLoading(false);
@@ -52,12 +55,12 @@ function RagSearch() {
     return (
         <div className="container-fluid p-4">
             <div className="mb-4">
-                <h2 className="fw-bold text-dark mb-1">Semantic RAG Search</h2>
+                <h2 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Semantic RAG Search</h2>
                 <p className="text-muted small mb-0">Query PGVector database using 768-dimensional AI vector embeddings</p>
             </div>
 
             {/* Search Input Box */}
-            <div className="card shadow-sm border-0 rounded-4 mb-4 bg-white p-3">
+            <div className="card shadow-sm border-0 rounded-4 mb-4 p-3">
                 <div className="card-body">
                     <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                         <div className="input-group input-group-lg mb-3">
@@ -113,17 +116,28 @@ function RagSearch() {
             </div>
 
             {/* Results Section */}
+            {error && (
+                <div className="alert alert-danger rounded-4 p-4 text-center shadow-sm">
+                    <h5>⚠️ Search Error</h5>
+                    <p className="mb-0">{error}</p>
+                </div>
+            )}
+
             {loading ? (
-                <div className="text-center p-5 bg-white rounded-4 shadow-sm my-4">
+                <div className="text-center p-5 panel-subtle rounded-4 shadow-sm my-4">
                     <div className="spinner-border text-primary me-2" style={{ width: '3rem', height: '3rem' }} role="status"></div>
                     <p className="mt-3 text-muted fw-semibold">Generating query vector embedding & searching PGVector HNSW index...</p>
                 </div>
-            ) : searched && results.length === 0 ? (
+            ) : searched && results.length === 0 && !error ? (
                 <div className="alert alert-info rounded-4 p-4 text-center shadow-sm">
                     <h5>No Related Logs Found</h5>
                     <p className="mb-0 text-muted">No log entries matched the similarity threshold for query: "{query}"</p>
                 </div>
-            ) : (
+            ) : results.length > 0 ? (
+                <>
+                <div className="mb-3">
+                    <span className="badge bg-primary rounded-pill px-3 py-2 fs-6">{results.length} result{results.length > 1 ? 's' : ''} found</span>
+                </div>
                 <div className="row g-4">
                     {results.map((result, idx) => {
                         const logItem = result.analysis;
@@ -142,7 +156,7 @@ function RagSearch() {
                                             Inspect Full Detail 🔍
                                         </button>
                                     </div>
-                                    <div className="card-body p-4 bg-white">
+                                    <div className="card-body p-4">
                                         <h5 className="card-title text-danger mb-3 fw-bold">
                                             Problem: {logItem.problem || logItem.logContent}
                                         </h5>
@@ -150,7 +164,7 @@ function RagSearch() {
                                         {logItem.cause && (
                                             <div className="mb-3">
                                                 <small className="text-muted fw-bold text-uppercase">Probable Cause:</small>
-                                                <p className="card-text text-dark bg-light p-3 rounded-3 border-start border-4 border-warning mt-1">
+                                                <p className="panel-subtle p-3 rounded-3 border-start border-4 border-warning mt-1" style={{ color: 'var(--text-main)' }}>
                                                     {logItem.cause}
                                                 </p>
                                             </div>
@@ -159,7 +173,7 @@ function RagSearch() {
                                         {logItem.solution && (
                                             <div className="mb-3">
                                                 <small className="text-muted fw-bold text-uppercase">Recommended Solution (AI RAG Knowledge Base):</small>
-                                                <p className="card-text text-success bg-light p-3 rounded-3 border-start border-4 border-success mt-1 font-monospace small">
+                                                <p className="panel-subtle text-success p-3 rounded-3 border-start border-4 border-success mt-1 font-monospace small">
                                                     {logItem.solution}
                                                 </p>
                                             </div>
@@ -177,7 +191,8 @@ function RagSearch() {
                         );
                     })}
                 </div>
-            )}
+                </>
+            ) : null}
 
             {selectedLog && (
                 <LogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />

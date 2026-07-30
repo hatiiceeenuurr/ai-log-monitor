@@ -72,12 +72,12 @@ function RecentAnalysis({ logs = [] }) {
                                             <td>{getSeverityBadge(log.severity)}</td>
                                             <td>{getPriorityBadge(log.priority)}</td>
                                             <td>
-                                                <span className={`badge ${log.occurrenceCount > 1 ? 'bg-primary' : 'bg-light text-dark border'}`}>
+                                                <span className={`badge ${log.occurrenceCount > 1 ? 'bg-primary' : 'bg-secondary bg-opacity-25 border'}`} style={{ color: 'var(--text-main)' }}>
                                                     {log.occurrenceCount || 1}x
                                                 </span>
                                             </td>
-                                            <td className="fw-semibold text-dark">{log.problem || log.logContent}</td>
-                                            <td className="small text-secondary">{log.solution ? (log.solution.length > 60 ? log.solution.substring(0, 60) + '...' : log.solution) : '-'}</td>
+                                            <td className="fw-semibold" style={{ color: 'var(--text-main)', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.problem || log.logContent}</td>
+                                            <td className="small text-muted">{log.solution ? (log.solution.length > 60 ? log.solution.substring(0, 60) + '...' : log.solution) : '-'}</td>
                                             <td className="text-end">
                                                 <button className="btn btn-sm btn-outline-primary rounded-pill px-3" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
                                                     Inspect 🔍

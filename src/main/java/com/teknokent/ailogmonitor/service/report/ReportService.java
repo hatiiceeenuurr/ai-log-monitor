@@ -259,8 +259,8 @@ public class ReportService {
         return repository.findAllByOrderByAnalyzedAtDesc();
     }
 
-    public Page<LogAnalysis> getLogsPaginated(Pageable pageable) {
-        return repository.findAllByOrderByAnalyzedAtDesc(pageable);
+    public Page<LogAnalysis> getLogsPaginated(Pageable pageable, String severity, String search) {
+        return repository.findByFilterAndSearch(severity, search, pageable);
     }
 
     public List<DailyAnalysisDTO> getDailyAnalysis() {

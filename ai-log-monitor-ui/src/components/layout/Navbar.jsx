@@ -4,6 +4,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import HealthBar from "../common/HealthBar";
 import { requestNotificationPermission, sendDesktopNotification } from "../../utils/notificationUtils";
+import { useTranslation } from "react-i18next";
 
 function Navbar() {
     const { user, logout } = useAuth();
@@ -11,6 +12,17 @@ function Navbar() {
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [notifGranted, setNotifGranted] = useState(() => 'Notification' in window && Notification.permission === 'granted');
+    const { t, i18n } = useTranslation();
+
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+        // Trigger Google Translate widget for dynamic content translation
+        const select = document.querySelector('.goog-te-combo');
+        if (select) {
+            select.value = lng;
+            select.dispatchEvent(new Event('change'));
+        }
+    };
 
     const handleEnableNotif = async () => {
         if (!('Notification' in window)) {
@@ -45,7 +57,7 @@ function Navbar() {
 
     return (
         <>
-            <nav className="navbar navbar-expand-lg border-bottom px-3 shadow-sm">
+            <nav className="navbar navbar-expand-lg border-bottom px-3 shadow-sm" translate="no">
                 <div className="container-fluid">
                     <span 
                         className="navbar-brand fw-bold fs-4 d-flex align-items-center gap-2" 
@@ -53,7 +65,7 @@ function Navbar() {
                         onClick={() => navigate('/')}
                     >
                         <span className="fs-3">🤖</span>
-                        <span className="bg-gradient bg-primary text-white px-2 py-1 rounded-3">AI Log Monitor</span>
+                        <span className="bg-gradient bg-primary text-white px-2 py-1 rounded-3">{t("navbar.title")}</span>
                     </span>
 
                     <HealthBar />
@@ -77,6 +89,24 @@ function Navbar() {
                             <span className="d-none d-sm-inline fw-semibold">{theme === 'dark' ? 'Light' : 'Dark'}</span>
                         </button>
 
+                        <div className="btn-group" role="group">
+                            <button 
+                                type="button" 
+                                className={`btn btn-sm ${i18n.language === 'tr' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                                onClick={() => changeLanguage('tr')}
+                            >
+                                TR
+                            </button>
+                            <button 
+                                type="button" 
+                                className={`btn btn-sm ${i18n.language === 'en' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                                onClick={() => changeLanguage('en')}
+                                translate="no"
+                            >
+                                EN
+                            </button>
+                        </div>
+
                         {user && (
                             <div 
                                 className="d-flex align-items-center gap-2 bg-secondary bg-opacity-25 px-3 py-1 rounded-pill border border-secondary border-opacity-50"
@@ -94,13 +124,6 @@ function Navbar() {
                             </div>
                         )}
 
-                        <button 
-                            className="btn btn-outline-secondary btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
-                            onClick={() => navigate('/settings')}
-                            title="Settings"
-                        >
-                            <span>⚙️</span> <span className="d-none d-sm-inline">Settings</span>
-                        </button>
 
                         <button 
                             className="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
@@ -123,7 +146,7 @@ function Navbar() {
                             </div>
                             <div className="modal-body p-4 text-center">
                                 <div className="display-4 text-warning mb-3">⚠️</div>
-                                <h6 className="fw-bold text-dark mb-2">Are you sure you want to log out?</h6>
+                                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>Are you sure you want to log out?</h6>
                                 <p className="text-muted small mb-0">Your active monitoring session will be ended on this device.</p>
                             </div>
                             <div className="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { changePassword } from '../services/api';
+import { changePassword, getSettings, updateSettings } from '../services/api';
 
 function Settings() {
     const { user } = useAuth();
@@ -12,11 +12,28 @@ function Settings() {
     const [passwordMsg, setPasswordMsg] = useState({ type: '', text: '' });
     const [updatingPassword, setUpdatingPassword] = useState(false);
 
-    // Slack Integration State
-    const [slackEnabled, setSlackEnabled] = useState(true);
+    const [slackEnabled, setSlackEnabled] = useState(false);
     const [webhookUrl, setWebhookUrl] = useState('');
     const [slackMsg, setSlackMsg] = useState({ type: '', text: '' });
     const [savingSlack, setSavingSlack] = useState(false);
+    const [loadingSettings, setLoadingSettings] = useState(true);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const settings = await getSettings();
+                if (settings) {
+                    setSlackEnabled(settings['slack_enabled'] === 'true');
+                    setWebhookUrl(settings['slack_webhook_url'] || '');
+                }
+            } catch (err) {
+                console.error("Failed to load settings", err);
+            } finally {
+                setLoadingSettings(false);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
@@ -53,13 +70,20 @@ function Settings() {
         }
     };
 
-    const handleSaveSlack = () => {
+    const handleSaveSlack = async () => {
         setSavingSlack(true);
         setSlackMsg({ type: '', text: '' });
-        setTimeout(() => {
-            setSavingSlack(false);
+        try {
+            await updateSettings({
+                'slack_enabled': slackEnabled.toString(),
+                'slack_webhook_url': webhookUrl
+            });
             setSlackMsg({ type: 'success', text: 'Slack Webhook settings updated successfully! High-priority incident alerts are active.' });
-        }, 600);
+        } catch (err) {
+            setSlackMsg({ type: 'danger', text: 'Failed to update Slack settings.' });
+        } finally {
+            setSavingSlack(false);
+        }
     };
 
     return (

@@ -18,7 +18,6 @@ function Login() {
     const [resetStep, setResetStep] = useState(1); // 1: Enter Email, 2: Enter OTP & New Password
     const [resetEmail, setResetEmail] = useState('');
     const [otpCodeInput, setOtpCodeInput] = useState('');
-    const [generatedOtp, setGeneratedOtp] = useState('');
     const [newResetPassword, setNewResetPassword] = useState('');
     const [resetMsg, setResetMsg] = useState({ type: '', text: '' });
     const [resetLoading, setResetLoading] = useState(false);
@@ -113,6 +112,11 @@ function Login() {
 
         if (!otpCodeInput.trim() || !newResetPassword.trim()) {
             setResetMsg({ type: 'danger', text: 'Please enter the 6-digit OTP code and your new password.' });
+            return;
+        }
+
+        if (!/^\d{6}$/.test(otpCodeInput.trim())) {
+            setResetMsg({ type: 'danger', text: 'OTP code must be exactly 6 digits.' });
             return;
         }
 

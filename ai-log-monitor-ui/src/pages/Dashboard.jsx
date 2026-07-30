@@ -5,7 +5,8 @@ import SeverityChart from "../components/charts/SeverityChart";
 import TrendChart from "../components/charts/TrendChart";
 import { getDashboardData, subscribeToLogStream } from "../services/api";
 import { exportLogsToCSV } from "../utils/exportUtils";
-import { sendDesktopNotification } from "../utils/notificationUtils";
+import { sendDesktopNotification, requestNotificationPermission } from "../utils/notificationUtils";
+import { useTranslation } from "react-i18next";
 
 function Dashboard() {
     const [data, setData] = useState({
@@ -14,18 +15,29 @@ function Dashboard() {
         warnCount: 0,
         infoCount: 0,
         lastAnalysis: null,
-        recentLogs: []
+        recentLogs: [],
+        dailyData: []
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [liveEventAlert, setLiveEventAlert] = useState(null);
     const [filterSeverity, setFilterSeverity] = useState('ALL');
+    const [notifPerm, setNotifPerm] = useState('Notification' in window ? Notification.permission : 'denied');
+    const { t } = useTranslation();
+
+    const handleRequestNotification = async () => {
+        const granted = await requestNotificationPermission();
+        setNotifPerm(granted ? 'granted' : 'denied');
+    };
 
     const loadDashboard = async () => {
         try {
             setLoading(true);
-            const result = await getDashboardData();
-            setData(result);
+            const [result, dailyData] = await Promise.all([
+                getDashboardData(),
+                import('../services/api').then(m => m.getDailyAnalysis())
+            ]);
+            setData({ ...result, dailyData });
             setError(null);
         } catch (err) {
             console.error("Dashboard fetch error:", err);
@@ -75,9 +87,20 @@ function Dashboard() {
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                 <div>
                     <h2 className="mb-0 fw-bold">AI Log Monitor Dashboard</h2>
-                    <small className="text-success fw-bold">
-                        <i className="bi bi-broadcast pulse-dot me-1"></i> Live SSE Stream Active
-                    </small>
+                    <div className="d-flex align-items-center mt-1">
+                        <small className="text-success fw-bold me-2">
+                            <i className="bi bi-broadcast pulse-dot me-1"></i> Live SSE Stream Active
+                        </small>
+                        {notifPerm === 'default' && (
+                            <button 
+                                className="btn btn-outline-warning btn-sm py-0 px-2 rounded-pill"
+                                style={{ fontSize: '0.75rem' }}
+                                onClick={handleRequestNotification}
+                            >
+                                🔔 Enable Alerts
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <div className="d-flex align-items-center gap-2">
                     <button 
@@ -112,27 +135,35 @@ function Dashboard() {
 
             <div className="row g-3 mb-4">
                 <StatCard
-                    title="Total Analyses"
+                    title={t("dashboard.total_logs")}
                     value={data.totalLogs || 0}
                     color="primary"
+                    icon="bi-bar-chart-fill"
+                    onClick={() => setFilterSeverity('ALL')}
                 />
 
                 <StatCard
-                    title="Errors (Error)"
+                    title={t("dashboard.error_logs")}
                     value={data.errorCount || 0}
                     color="danger"
+                    icon="bi-exclamation-octagon-fill"
+                    onClick={() => setFilterSeverity('ERROR')}
                 />
 
                 <StatCard
-                    title="Warnings (Warn)"
+                    title={t("dashboard.warn_logs")}
                     value={data.warnCount || 0}
                     color="warning"
+                    icon="bi-exclamation-triangle-fill"
+                    onClick={() => setFilterSeverity('WARN')}
                 />
 
                 <StatCard
-                    title="Information (Info)"
+                    title={t("dashboard.info_logs")}
                     value={data.infoCount || 0}
                     color="success"
+                    icon="bi-info-circle-fill"
+                    onClick={() => setFilterSeverity('INFO')}
                 />
             </div>
 
@@ -147,7 +178,7 @@ function Dashboard() {
                     />
                 </div>
                 <div className="col-12 col-lg-7">
-                    <TrendChart logs={data.recentLogs || []} />
+                    <TrendChart dailyData={data.dailyData || []} />
                 </div>
             </div>
 
@@ -160,6 +191,7 @@ function Dashboard() {
                             key={sev}
                             className={`btn btn-sm severity-pill-btn ${filterSeverity === sev ? 'btn-primary active' : 'btn-outline-secondary'}`}
                             onClick={() => setFilterSeverity(sev)}
+                            translate="no"
                         >
                             {sev}
                         </button>

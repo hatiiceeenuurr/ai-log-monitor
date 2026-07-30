@@ -10,6 +10,7 @@ import Analysis from "./pages/Analysis";
 import RagSearch from "./pages/RagSearch";
 import Scan from "./pages/Scan";
 import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
                 </Route>
               </Route>
 
+              {/* Catch-all 404 Route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

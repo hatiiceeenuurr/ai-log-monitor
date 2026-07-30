@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8081/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -17,6 +17,24 @@ api.interceptors.request.use((config) => {
     }
     return config;
 }, (error) => Promise.reject(error));
+
+// Intercept responses to handle 401 Unauthorized globally
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            console.warn("Session expired or unauthorized (401). Logging out...");
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 export const loginUser = async (username, password) => {
     const response = await api.post('/auth/login', { username, password });
@@ -58,9 +76,13 @@ export const getAllLogs = async () => {
     return response.data;
 };
 
-export const getLogsPaginated = async (page = 0, size = 10) => {
-    const response = await api.get(`/logs/page?page=${page}&size=${size}`);
-    return response.data;
+export const getLogsPaginated = async (page = 0, size = 10, severity = 'ALL', search = '') => {
+    try {
+        const response = await api.get(`/logs/page?page=${page}&size=${size}&severity=${severity}&search=${encodeURIComponent(search)}`);
+        return response.data;
+    } catch (e) {
+        throw e;
+    }
 };
 
 export const getDailyAnalysis = async () => {
@@ -74,23 +96,59 @@ export const resetAllLogData = async () => {
 };
 
 export const searchLogs = async (query) => {
-    const response = await api.get(`/search?query=${encodeURIComponent(query)}`);
+    const response = await api.get('/search', { params: { query } });
     return response.data;
 };
 
 export const subscribeToLogStream = (onLogReceived) => {
-    const eventSource = new EventSource(`${API_BASE_URL}/logs/stream`);
-    
-    eventSource.addEventListener('LOG_ANALYSIS', (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            onLogReceived(data);
-        } catch (e) {
-            console.error("SSE JSON Parse hatası:", e);
-        }
-    });
+    let eventSource = null;
+    let reconnectTimeout = null;
 
-    return () => eventSource.close();
+    const connect = () => {
+        eventSource = new EventSource(`${API_BASE_URL}/logs/stream`);
+        
+        eventSource.addEventListener('LOG_ANALYSIS', (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                onLogReceived(data);
+            } catch (e) {
+                console.error("SSE JSON Parse error:", e);
+            }
+        });
+
+        eventSource.onerror = (error) => {
+            console.error("SSE Connection Error. Attempting to reconnect...", error);
+            eventSource.close();
+            // Reconnect after 5 seconds
+            reconnectTimeout = setTimeout(connect, 5000);
+        };
+    };
+
+    connect();
+
+    return () => {
+        if (eventSource) eventSource.close();
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
+};
+
+export const getHealthStatus = async () => {
+    try {
+        const response = await api.get('/health');
+        return response.data;
+    } catch (e) {
+        throw e;
+    }
+};
+
+export const getSettings = async () => {
+    const response = await api.get('/settings');
+    return response.data;
+};
+
+export const updateSettings = async (settings) => {
+    const response = await api.post('/settings', settings);
+    return response.data;
 };
 
 export default api;

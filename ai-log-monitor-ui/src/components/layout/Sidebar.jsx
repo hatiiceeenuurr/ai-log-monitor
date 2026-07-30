@@ -1,16 +1,19 @@
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 function Sidebar() {
+    const { t } = useTranslation();
     return (
         <div
-            className="bg-dark text-white p-3 border-end border-secondary border-opacity-25"
+            className="sidebar-nav p-3"
             style={{
                 width: "220px",
                 minHeight: "100vh",
             }}
+            translate="no"
         >
             <div className="text-center mb-4 pt-2 border-bottom border-secondary border-opacity-25 pb-3">
-                <h6 className="text-white text-uppercase tracking-wider fw-bold mb-0 opacity-75">Navigation</h6>
+                <h6 className="text-uppercase fw-bold mb-0 opacity-75" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Navigation</h6>
             </div>
 
             <ul className="nav flex-column gap-2">
@@ -18,11 +21,12 @@ function Sidebar() {
                 <li className="nav-item">
                     <NavLink
                         to="/"
+                        end
                         className={({ isActive }) =>
-                            `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
+                            `nav-link rounded-3 px-3 py-2 ${isActive ? "active" : ""}`
                         }
                     >
-                        📊 Dashboard
+                        📊 {t("sidebar.dashboard")}
                     </NavLink>
                 </li>
 
@@ -30,10 +34,10 @@ function Sidebar() {
                     <NavLink
                         to="/analysis"
                         className={({ isActive }) =>
-                            `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
+                            `nav-link rounded-3 px-3 py-2 ${isActive ? "active" : ""}`
                         }
                     >
-                        📋 Log Analysis
+                        📋 {t("sidebar.analysis")}
                     </NavLink>
                 </li>
 
@@ -41,10 +45,10 @@ function Sidebar() {
                     <NavLink
                         to="/rag"
                         className={({ isActive }) =>
-                            `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
+                            `nav-link rounded-3 px-3 py-2 ${isActive ? "active" : ""}`
                         }
                     >
-                        🔍 RAG Search
+                        🔍 {t("sidebar.rag")}
                     </NavLink>
                 </li>
 
@@ -52,10 +56,10 @@ function Sidebar() {
                     <NavLink
                         to="/scan"
                         className={({ isActive }) =>
-                            `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
+                            `nav-link rounded-3 px-3 py-2 ${isActive ? "active" : ""}`
                         }
                     >
-                        ⚡ Scan History
+                        ⚡ {t("sidebar.scan")}
                     </NavLink>
                 </li>
 
@@ -63,10 +67,10 @@ function Sidebar() {
                     <NavLink
                         to="/settings"
                         className={({ isActive }) =>
-                            `nav-link rounded-3 px-3 py-2 transition-all ${isActive ? "bg-primary text-white fw-bold shadow-sm" : "text-light opacity-75 hover-opacity-100"}`
+                            `nav-link rounded-3 px-3 py-2 ${isActive ? "active" : ""}`
                         }
                     >
-                        ⚙️ Settings
+                        ⚙️ {t("sidebar.settings")}
                     </NavLink>
                 </li>
 

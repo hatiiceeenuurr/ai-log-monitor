@@ -16,7 +16,7 @@ function Analysis() {
     const fetchLogs = async () => {
         try {
             setLoading(true);
-            const data = await getLogsPaginated(page, pageSize);
+            const data = await getLogsPaginated(page, pageSize, filterSeverity, searchTerm);
             setPageData(data);
         } catch (err) {
             console.error("Failed to load historical log analyses:", err);
@@ -26,8 +26,12 @@ function Analysis() {
     };
 
     useEffect(() => {
-        fetchLogs();
-    }, [page, pageSize]);
+        const delayDebounceFn = setTimeout(() => {
+            fetchLogs();
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [page, pageSize, filterSeverity, searchTerm]);
 
     const handleCopySolution = (logId, text) => {
         if (!text) return;
@@ -37,14 +41,7 @@ function Analysis() {
     };
 
     const logs = pageData.content || [];
-    const filteredLogs = logs.filter(log => {
-        const matchesSeverity = filterSeverity === 'ALL' || log.severity?.toUpperCase() === filterSeverity;
-        const matchesSearch = !searchTerm || 
-            log.problem?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            log.logContent?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            log.solution?.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSeverity && matchesSearch;
-    });
+    const filteredLogs = logs;
 
     const getSeverityBadge = (severity) => {
         switch (severity?.toUpperCase()) {
@@ -57,6 +54,16 @@ function Analysis() {
             case 'INFO':
             default:
                 return <span className="badge bg-success">INFO</span>;
+        }
+    };
+
+    const getBorderClass = (severity) => {
+        switch (severity?.toUpperCase()) {
+            case 'ERROR':
+            case 'CRITICAL': return 'border-danger';
+            case 'WARN':
+            case 'WARNING': return 'border-warning';
+            default: return 'border-success';
         }
     };
 
@@ -82,19 +89,19 @@ function Analysis() {
                         className="form-control" 
                         placeholder="Search by problem, content or solution..." 
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
                     />
                 </div>
                 <div className="col-md-3">
                     <select 
                         className="form-select"
                         value={filterSeverity}
-                        onChange={(e) => setFilterSeverity(e.target.value)}
+                        onChange={(e) => { setFilterSeverity(e.target.value); setPage(0); }}
                     >
                         <option value="ALL">All Severities</option>
-                        <option value="ERROR">ERROR</option>
-                        <option value="WARN">WARN</option>
-                        <option value="INFO">INFO</option>
+                        <option value="ERROR" translate="no">ERROR</option>
+                        <option value="WARN" translate="no">WARN</option>
+                        <option value="INFO" translate="no">INFO</option>
                     </select>
                 </div>
                 <div className="col-md-2">
@@ -111,22 +118,23 @@ function Analysis() {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="text-center p-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
+            {loading && (
+                <div className="text-center mb-3">
+                    <div className="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                    <span className="text-muted small">Loading records...</span>
                 </div>
-            ) : filteredLogs.length === 0 ? (
+            )}
+
+            {!loading && filteredLogs.length === 0 ? (
                 <div className="alert alert-info text-center shadow-sm border-0 rounded-3">
                     No matching log records found.
                 </div>
             ) : (
-                <>
+                <div className={loading ? "opacity-50 pointer-events-none" : ""}>
                     <div className="row g-3">
                         {filteredLogs.map(log => (
                             <div key={log.id} className="col-12">
-                                <div className="card shadow-sm border-start border-4 border-primary">
+                                <div className={`card shadow-sm border-start border-4 ${getBorderClass(log.severity)}`}>
                                     <div className="card-header bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
                                         <div>
                                             {getSeverityBadge(log.severity)}
@@ -162,12 +170,12 @@ function Analysis() {
                                         {log.solution && (
                                             <div className="mb-3">
                                                 <strong className="text-success small d-block mb-1">Recommended AI Solution:</strong>
-                                                <div className="solution-code-box">
-                                                    <code>{log.solution}</code>
+                                                <div className="solution-code-box" translate="yes">
+                                                    {log.solution}
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="bg-dark text-light p-2 rounded small font-monospace">
+                                        <div className="p-3 mt-3 rounded-3 font-monospace small" style={{ backgroundColor: 'var(--code-bg)', color: 'var(--code-text)', overflowX: 'auto' }} translate="no">
                                             <code>{log.logContent}</code>
                                         </div>
                                     </div>
@@ -198,7 +206,7 @@ function Analysis() {
                             Next Page &raquo;
                         </button>
                     </div>
-                </>
+                </div>
             )}
 
             {selectedLog && (

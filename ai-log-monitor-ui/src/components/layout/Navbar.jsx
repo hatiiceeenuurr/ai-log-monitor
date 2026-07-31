@@ -77,7 +77,7 @@ function Navbar() {
                             title={notifGranted ? "Desktop notifications active" : "Click to enable Windows Desktop Alerts"}
                         >
                             <span>🔔</span>
-                            <span className="d-none d-md-inline fw-semibold">{notifGranted ? 'Alerts Active' : 'Enable Alerts'}</span>
+                            <span className="d-none d-md-inline fw-semibold">{notifGranted ? t('dashboard.alerts_active') : t('dashboard.enable_alerts')}</span>
                         </button>
 
                         <button
@@ -86,7 +86,7 @@ function Navbar() {
                             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
                         >
                             <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
-                            <span className="d-none d-sm-inline fw-semibold">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+                            <span className="d-none d-sm-inline fw-semibold">{theme === 'dark' ? t('navbar.light') : t('navbar.dark')}</span>
                         </button>
 
                         <div className="btn-group" role="group">
@@ -117,7 +117,7 @@ function Navbar() {
                                 <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '28px', height: '28px', fontSize: '13px' }}>
                                     {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
                                 </div>
-                                <span className="fw-semibold small text-body">{user.username}</span>
+                                <span className="fw-semibold small" style={{ color: 'var(--bs-heading-color)' }}>{user.username}</span>
                                 <span className="badge bg-danger text-uppercase ms-1" style={{ fontSize: '10px' }}>
                                     {user.role || 'ADMIN'}
                                 </span>
@@ -129,7 +129,7 @@ function Navbar() {
                             className="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
                             onClick={() => setShowLogoutModal(true)}
                         >
-                            <span>🚪</span> Logout
+                            <span>🚪</span> {t('sidebar.logout')}
                         </button>
                     </div>
                 </div>
@@ -141,20 +141,20 @@ function Navbar() {
                     <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '400px' }}>
                         <div className="modal-content shadow-lg border-0 rounded-4">
                             <div className="modal-header bg-dark text-white rounded-top-4 border-bottom border-secondary border-opacity-25">
-                                <h5 className="modal-title fw-bold text-white fs-6">Confirm Logout</h5>
+                                <h5 className="modal-title fw-bold text-white fs-6">{t('auth.logout_confirm_title')}</h5>
                                 <button type="button" className="btn-close btn-close-white" onClick={() => setShowLogoutModal(false)}></button>
                             </div>
                             <div className="modal-body p-4 text-center">
                                 <div className="display-4 text-warning mb-3">⚠️</div>
-                                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>Are you sure you want to log out?</h6>
-                                <p className="text-muted small mb-0">Your active monitoring session will be ended on this device.</p>
+                                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>{t('auth.logout_confirm_desc')}</h6>
+                                <p className="text-muted small mb-0">{t('auth.logout_confirm_sub')}</p>
                             </div>
                             <div className="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
                                 <button type="button" className="btn btn-secondary px-4 rounded-pill fw-semibold" onClick={() => setShowLogoutModal(false)}>
-                                    Cancel
+                                    {t('auth.cancel')}
                                 </button>
                                 <button type="button" className="btn btn-danger px-4 rounded-pill fw-bold" onClick={handleConfirmLogout}>
-                                    Yes, Logout 🚪
+                                    {t('auth.logout_yes')}
                                 </button>
                             </div>
                         </div>

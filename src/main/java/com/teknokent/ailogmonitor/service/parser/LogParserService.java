@@ -30,6 +30,10 @@ public class LogParserService {
 
     private Severity detectSeverity(String log) {
 
+        if (log.contains("CRITICAL") || log.contains("FATAL")) {
+            return Severity.CRITICAL;
+        }
+
         if (log.contains("ERROR") || log.contains("Exception")) {
             return Severity.ERROR;
         }

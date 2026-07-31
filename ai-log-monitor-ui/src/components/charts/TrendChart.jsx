@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function TrendChart({ dailyData = [] }) {
+    const { t } = useTranslation();
     const [hoveredPoint, setHoveredPoint] = useState(null);
 
     // Get last 7 days of data, or pad with 0s if not enough
@@ -41,10 +43,10 @@ function TrendChart({ dailyData = [] }) {
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="fw-bold mb-0 text-uppercase tracking-wider">
                     <i className="bi bi-graph-up-arrow me-2 text-success"></i>
-                    Log Volume Activity (Daily Trend)
+                    {t('charts.trend_title')}
                 </h6>
                 <span className="badge bg-success-subtle text-success rounded-pill px-3 py-1">
-                    ● Real-Time Stream
+                    {t('charts.real_time')}
                 </span>
             </div>
 
@@ -99,7 +101,7 @@ function TrendChart({ dailyData = [] }) {
                                 y={height - 5}
                                 textAnchor="middle"
                                 className="chart-axis-label"
-                                fill="var(--bs-secondary-color)"
+                                fill="#adb5bd"
                                 fontSize="10"
                             >
                                 {pt.label}

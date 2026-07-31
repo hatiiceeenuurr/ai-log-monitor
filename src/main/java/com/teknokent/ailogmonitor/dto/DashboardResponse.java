@@ -8,6 +8,7 @@ import java.util.List;
 public class DashboardResponse {
 
     private long totalLogs;
+    private long criticalCount;
     private long errorCount;
     private long warnCount;
     private long infoCount;
@@ -18,6 +19,7 @@ public class DashboardResponse {
     }
 
     public DashboardResponse(long totalLogs,
+                             long criticalCount,
                              long errorCount,
                              long warnCount,
                              long infoCount,
@@ -25,6 +27,7 @@ public class DashboardResponse {
                              List<LogAnalysis> recentLogs) {
 
         this.totalLogs = totalLogs;
+        this.criticalCount = criticalCount;
         this.errorCount = errorCount;
         this.warnCount = warnCount;
         this.infoCount = infoCount;
@@ -38,6 +41,14 @@ public class DashboardResponse {
 
     public void setTotalLogs(long totalLogs) {
         this.totalLogs = totalLogs;
+    }
+
+    public long getCriticalCount() {
+        return criticalCount;
+    }
+
+    public void setCriticalCount(long criticalCount) {
+        this.criticalCount = criticalCount;
     }
 
     public long getErrorCount() {

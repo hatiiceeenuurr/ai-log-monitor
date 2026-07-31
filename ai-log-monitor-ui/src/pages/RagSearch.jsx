@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { searchLogs } from '../services/api';
 import LogDetailModal from '../components/modals/LogDetailModal';
 
 function RagSearch() {
+    const { t } = useTranslation();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -11,11 +13,11 @@ function RagSearch() {
     const [selectedLog, setSelectedLog] = useState(null);
 
     const sampleQueries = [
-        "PostgreSQL HikariPool connection timeout",
-        "Redis operation latency warning",
-        "HTTP 504 Gateway Timeout for inventory-service",
-        "CircuitBreaker is OPEN and does not permit calls",
-        "No space left on device while flushing log"
+        t("rag.sample_1"),
+        t("rag.sample_2"),
+        t("rag.sample_3"),
+        t("rag.sample_4"),
+        t("rag.sample_5")
     ];
 
     const handleSearch = async (searchQuery = query) => {
@@ -55,8 +57,8 @@ function RagSearch() {
     return (
         <div className="container-fluid p-4">
             <div className="mb-4">
-                <h2 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Semantic RAG Search</h2>
-                <p className="text-muted small mb-0">Query PGVector database using 768-dimensional AI vector embeddings</p>
+                <h2 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{t('rag.title')}</h2>
+                <p className="text-muted small mb-0">{t('rag.subtitle')}</p>
             </div>
 
             {/* Search Input Box */}
@@ -68,7 +70,7 @@ function RagSearch() {
                             <input 
                                 type="text" 
                                 className="form-control bg-light border-start-0 shadow-none" 
-                                placeholder="Enter an error message, stack trace, or problem description to search vector DB..."
+                                placeholder={t("rag.placeholder")}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                             />
@@ -89,16 +91,16 @@ function RagSearch() {
                                 {loading ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Searching Vector DB...
+                                        {t("rag.searching")}
                                     </>
-                                ) : 'Search Vector DB'}
+                                ) : t("rag.search_btn")}
                             </button>
                         </div>
                     </form>
 
                     {/* Quick Sample Queries */}
                     <div>
-                        <small className="text-muted fw-bold d-block mb-2">🚀 One-Click Sample Vector Queries:</small>
+                        <small className="text-muted fw-bold d-block mb-2">{t('rag.sample_queries')}</small>
                         <div className="d-flex flex-wrap gap-2">
                             {sampleQueries.map((sample, idx) => (
                                 <button 
@@ -126,11 +128,11 @@ function RagSearch() {
             {loading ? (
                 <div className="text-center p-5 panel-subtle rounded-4 shadow-sm my-4">
                     <div className="spinner-border text-primary me-2" style={{ width: '3rem', height: '3rem' }} role="status"></div>
-                    <p className="mt-3 text-muted fw-semibold">Generating query vector embedding & searching PGVector HNSW index...</p>
+                    <p className="mt-3 text-muted fw-semibold">{t('rag.generating_embedding')}</p>
                 </div>
             ) : searched && results.length === 0 && !error ? (
                 <div className="alert alert-info rounded-4 p-4 text-center shadow-sm">
-                    <h5>No Related Logs Found</h5>
+                    <h5>{t('rag.no_results_title')}</h5>
                     <p className="mb-0 text-muted">No log entries matched the similarity threshold for query: "{query}"</p>
                 </div>
             ) : results.length > 0 ? (
@@ -147,24 +149,24 @@ function RagSearch() {
                                     <div className="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
                                         <div className="d-flex align-items-center gap-2">
                                             {getSimilarityBadge(result.similarity)}
-                                            <span className={`badge ${logItem.severity === 'ERROR' ? 'bg-danger' : logItem.severity === 'WARN' ? 'bg-warning text-dark' : 'bg-success'}`}>
+                                            <span className={`badge ${logItem.severity === 'ERROR' ? 'bg-danger' : logItem.severity === 'WARN' ? 'bg-warning text-dark' : 'bg-success'}`} translate="no">
                                                 {logItem.severity}
                                             </span>
-                                            <span className="badge bg-secondary">{logItem.priority || 'NORMAL'}</span>
+                                            <span className="badge bg-secondary" translate="no">{logItem.priority || 'NORMAL'}</span>
                                         </div>
                                         <button className="btn btn-sm btn-outline-light rounded-pill px-3" onClick={(e) => { e.stopPropagation(); setSelectedLog(logItem); }}>
-                                            Inspect Full Detail 🔍
+                                            {t('rag.inspect_btn')}
                                         </button>
                                     </div>
                                     <div className="card-body p-4">
                                         <h5 className="card-title text-danger mb-3 fw-bold">
-                                            Problem: {logItem.problem || logItem.logContent}
+                                            {t('rag.problem')} <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">{logItem.problem || logItem.logContent}</span>
                                         </h5>
 
                                         {logItem.cause && (
                                             <div className="mb-3">
-                                                <small className="text-muted fw-bold text-uppercase">Probable Cause:</small>
-                                                <p className="panel-subtle p-3 rounded-3 border-start border-4 border-warning mt-1" style={{ color: 'var(--text-main)' }}>
+                                                <small className="text-muted fw-bold text-uppercase">{t('rag.cause')}</small>
+                                                <p className="panel-subtle p-3 rounded-3 border-start border-4 border-warning mt-1" style={{ color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
                                                     {logItem.cause}
                                                 </p>
                                             </div>
@@ -172,16 +174,16 @@ function RagSearch() {
 
                                         {logItem.solution && (
                                             <div className="mb-3">
-                                                <small className="text-muted fw-bold text-uppercase">Recommended Solution (AI RAG Knowledge Base):</small>
-                                                <p className="panel-subtle text-success p-3 rounded-3 border-start border-4 border-success mt-1 font-monospace small">
+                                                <small className="text-muted fw-bold text-uppercase">{t('rag.solution')}</small>
+                                                <p className="panel-subtle text-success p-3 rounded-3 border-start border-4 border-success mt-1 font-monospace small" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
                                                     {logItem.solution}
                                                 </p>
                                             </div>
                                         )}
 
                                         <div>
-                                            <small className="text-muted fw-bold text-uppercase">Matched Log Pattern:</small>
-                                            <pre className="p-3 bg-dark text-light rounded-3 font-monospace small mb-0 mt-1" style={{ overflowX: 'auto' }}>
+                                            <small className="text-muted fw-bold text-uppercase">{t('rag.matched_pattern')}</small>
+                                            <pre className="p-3 bg-dark text-light rounded-3 font-monospace small mb-0 mt-1" style={{ overflowX: 'auto', wordBreak: 'break-word', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }} translate="no">
                                                 <code>{logItem.logContent}</code>
                                             </pre>
                                         </div>

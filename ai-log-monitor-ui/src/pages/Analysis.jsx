@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getLogsPaginated } from '../services/api';
 import LogDetailModal from '../components/modals/LogDetailModal';
 import { exportLogsToCSV } from '../utils/exportUtils';
 
+
 function Analysis() {
+    const { t } = useTranslation();
     const [pageData, setPageData] = useState({ content: [], totalPages: 0, totalElements: 0 });
+
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [loading, setLoading] = useState(true);
@@ -40,6 +44,15 @@ function Analysis() {
         setTimeout(() => setCopiedId(null), 2500);
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        try {
+            return new Date(dateString).toLocaleString('en-US');
+        } catch(e) {
+            return '-';
+        }
+    };
+
     const logs = pageData.content || [];
     const filteredLogs = logs;
 
@@ -47,13 +60,13 @@ function Analysis() {
         switch (severity?.toUpperCase()) {
             case 'ERROR':
             case 'CRITICAL':
-                return <span className="badge bg-danger">ERROR</span>;
+                return <span className="badge bg-danger">{t(`badges.${severity.toLowerCase()}`)}</span>;
             case 'WARN':
             case 'WARNING':
-                return <span className="badge bg-warning text-dark">WARN</span>;
+                return <span className="badge bg-warning text-dark">{t('badges.warn')}</span>;
             case 'INFO':
             default:
-                return <span className="badge bg-success">INFO</span>;
+                return <span className="badge bg-success">{t('badges.info')}</span>;
         }
     };
 
@@ -71,8 +84,8 @@ function Analysis() {
         <div className="container-fluid p-4">
             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
-                    <h2 className="mb-0 fw-bold">Historical Log Analysis Records</h2>
-                    <small className="text-muted">Total {pageData.totalElements || 0} analyses registered</small>
+                    <h2 className="mb-0 fw-bold">{t('analysis.title')}</h2>
+                    <small className="text-muted">{t('analysis.subtitle', { count: pageData.totalElements || 0 })}</small>
                 </div>
                 <button
                     className="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
@@ -87,7 +100,7 @@ function Analysis() {
                     <input 
                         type="text" 
                         className="form-control" 
-                        placeholder="Search by problem, content or solution..." 
+                        placeholder={t("analysis.search_placeholder")} 
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
                     />
@@ -98,10 +111,10 @@ function Analysis() {
                         value={filterSeverity}
                         onChange={(e) => { setFilterSeverity(e.target.value); setPage(0); }}
                     >
-                        <option value="ALL">All Severities</option>
-                        <option value="ERROR" translate="no">ERROR</option>
-                        <option value="WARN" translate="no">WARN</option>
-                        <option value="INFO" translate="no">INFO</option>
+                        <option value="ALL">{t('analysis.filter_all')}</option>
+                        <option value="ERROR" translate="no">{t('badges.error')}</option>
+                        <option value="WARN" translate="no">{t('badges.warn')}</option>
+                        <option value="INFO" translate="no">{t('badges.info')}</option>
                     </select>
                 </div>
                 <div className="col-md-2">
@@ -110,10 +123,10 @@ function Analysis() {
                         value={pageSize}
                         onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
                     >
-                        <option value="5">5 / Page</option>
-                        <option value="10">10 / Page</option>
-                        <option value="20">20 / Page</option>
-                        <option value="50">50 / Page</option>
+                        <option value="5">{t('analysis.page_size', { size: 5 })}</option>
+                        <option value="10">{t('analysis.page_size', { size: 10 })}</option>
+                        <option value="20">{t('analysis.page_size', { size: 20 })}</option>
+                        <option value="50">{t('analysis.page_size', { size: 50 })}</option>
                     </select>
                 </div>
             </div>
@@ -121,13 +134,13 @@ function Analysis() {
             {loading && (
                 <div className="text-center mb-3">
                     <div className="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
-                    <span className="text-muted small">Loading records...</span>
+                    <span className="text-muted small">{t('analysis.loading')}</span>
                 </div>
             )}
 
             {!loading && filteredLogs.length === 0 ? (
                 <div className="alert alert-info text-center shadow-sm border-0 rounded-3">
-                    No matching log records found.
+                    {t('analysis.no_records')}
                 </div>
             ) : (
                 <div className={loading ? "opacity-50 pointer-events-none" : ""}>
@@ -138,13 +151,13 @@ function Analysis() {
                                     <div className="card-header bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
                                         <div>
                                             {getSeverityBadge(log.severity)}
-                                            <span className="ms-2 badge bg-secondary">{log.priority || 'NORMAL'}</span>
+                                            <span className="ms-2 badge bg-secondary">{log.priority ? t(`badges.${log.priority.toLowerCase()}`) : t('badges.normal')}</span>
                                             <span className={`ms-2 badge ${log.occurrenceCount > 1 ? 'bg-primary' : 'bg-outline-secondary'}`}>
-                                                {log.occurrenceCount || 1}x Repeats
+                                                {t('analysis.repeats', { count: log.occurrenceCount || 1 })}
                                             </span>
                                             <span className="ms-2 text-muted small">
-                                                First: {new Date(log.analyzedAt).toLocaleString('en-US')}
-                                                {log.lastSeenAt && ` | Last: ${new Date(log.lastSeenAt).toLocaleString('en-US')}`}
+                                                {t('analysis.first_seen')} {formatDate(log.analyzedAt)}
+                                                {log.lastSeenAt && ` | ${t('analysis.last_seen')} ${formatDate(log.lastSeenAt)}`}
                                             </span>
                                         </div>
                                         <div className="d-flex align-items-center gap-2">
@@ -153,23 +166,25 @@ function Analysis() {
                                                     className="btn btn-sm btn-outline-success rounded-pill px-3 copy-btn"
                                                     onClick={() => handleCopySolution(log.id, log.solution)}
                                                 >
-                                                    {copiedId === log.id ? 'Copied! ✓' : '📋 Copy Solution'}
+                                                    {copiedId === log.id ? t('analysis.copied') : t('analysis.copy_solution')}
                                                 </button>
                                             )}
                                             <button 
                                                 className="btn btn-sm btn-outline-primary rounded-pill px-3" 
                                                 onClick={() => setSelectedLog(log)}
                                             >
-                                                Inspect Details 🔍
+                                                {t('analysis.inspect_details')}
                                             </button>
                                         </div>
                                     </div>
                                     <div className="card-body">
-                                        <h6 className="card-title text-danger mb-2">Problem: {log.problem}</h6>
-                                        {log.cause && <p className="card-text mb-1"><strong>Cause:</strong> {log.cause}</p>}
+                                        <h6 className="card-title text-danger mb-2">
+                                            {t('analysis.problem')} <span translate="yes">{log.problem}</span>
+                                        </h6>
+                                        {log.cause && <p className="card-text mb-1"><strong>{t('analysis.cause')}</strong> <span translate="yes">{log.cause}</span></p>}
                                         {log.solution && (
                                             <div className="mb-3">
-                                                <strong className="text-success small d-block mb-1">Recommended AI Solution:</strong>
+                                                <strong className="text-success small d-block mb-1">{t('analysis.recommended_solution')}</strong>
                                                 <div className="solution-code-box" translate="yes">
                                                     {log.solution}
                                                 </div>
@@ -191,11 +206,11 @@ function Analysis() {
                             disabled={page === 0}
                             onClick={() => setPage(p => Math.max(0, p - 1))}
                         >
-                            &laquo; Previous Page
+                            &laquo; {t('analysis.prev_page').replace('« ', '')}
                         </button>
 
                         <span className="small text-muted fw-semibold">
-                            Page {page + 1} of {pageData.totalPages || 1}
+                            {t('analysis.page_info', { current: page + 1, total: pageData.totalPages || 1 })}
                         </span>
 
                         <button 
@@ -203,7 +218,7 @@ function Analysis() {
                             disabled={page >= (pageData.totalPages - 1)}
                             onClick={() => setPage(p => p + 1)}
                         >
-                            Next Page &raquo;
+                            {t('analysis.next_page').replace(' »', '')} &raquo;
                         </button>
                     </div>
                 </div>

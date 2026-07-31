@@ -255,6 +255,11 @@ public class AuthController {
         }
 
         User user = userOpt.get();
+        
+        if (passwordEncoder.matches(newPassword.trim(), user.getPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Yeni şifre eski şifre ile aynı olamaz!"));
+        }
+        
         user.setPassword(passwordEncoder.encode(newPassword.trim()));
         userRepository.save(user);
 

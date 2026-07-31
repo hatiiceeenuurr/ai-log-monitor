@@ -5,12 +5,12 @@ import SeverityChart from "../components/charts/SeverityChart";
 import TrendChart from "../components/charts/TrendChart";
 import { getDashboardData, subscribeToLogStream } from "../services/api";
 import { exportLogsToCSV } from "../utils/exportUtils";
-import { sendDesktopNotification, requestNotificationPermission } from "../utils/notificationUtils";
+import { requestNotificationPermission, sendDesktopNotification } from "../utils/notificationUtils";
 import { useTranslation } from "react-i18next";
-
 function Dashboard() {
     const [data, setData] = useState({
         totalLogs: 0,
+        criticalCount: 0,
         errorCount: 0,
         warnCount: 0,
         infoCount: 0,
@@ -23,7 +23,7 @@ function Dashboard() {
     const [liveEventAlert, setLiveEventAlert] = useState(null);
     const [filterSeverity, setFilterSeverity] = useState('ALL');
     const [notifPerm, setNotifPerm] = useState('Notification' in window ? Notification.permission : 'denied');
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const handleRequestNotification = async () => {
         const granted = await requestNotificationPermission();
@@ -60,7 +60,7 @@ function Dashboard() {
             const sev = (newAnalysis.severity || '').toUpperCase();
             if (sev === 'CRITICAL' || sev === 'ERROR') {
                 sendDesktopNotification(
-                    `🚨 CRITICAL Incident [${sev}]`,
+                    `🚨 ${sev} Incident Detected`,
                     `${problemText}\nSolution: ${newAnalysis.solution || 'Inspect dashboard details'}`
                 );
             }
@@ -86,10 +86,10 @@ function Dashboard() {
         <div className="container-fluid p-4">
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                 <div>
-                    <h2 className="mb-0 fw-bold">AI Log Monitor Dashboard</h2>
+                    <h2 className="mb-0 fw-bold">{t("dashboard.title")}</h2>
                     <div className="d-flex align-items-center mt-1">
                         <small className="text-success fw-bold me-2">
-                            <i className="bi bi-broadcast pulse-dot me-1"></i> Live SSE Stream Active
+                            <i className="bi bi-broadcast pulse-dot me-1"></i> {t("dashboard.live_stream")}
                         </small>
                         {notifPerm === 'default' && (
                             <button 
@@ -97,7 +97,7 @@ function Dashboard() {
                                 style={{ fontSize: '0.75rem' }}
                                 onClick={handleRequestNotification}
                             >
-                                🔔 Enable Alerts
+                                🔔 {t("dashboard.enable_alerts")}
                             </button>
                         )}
                     </div>
@@ -108,14 +108,14 @@ function Dashboard() {
                         onClick={() => exportLogsToCSV(filteredLogs, 'dashboard_recent_logs.csv')}
                         title="Download CSV Report"
                     >
-                        <span>📥</span> Export CSV
+                        <span>📥</span> {t("dashboard.export_csv")}
                     </button>
                     <button 
                         className="btn btn-outline-primary btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
                         onClick={loadDashboard}
                         disabled={loading}
                     >
-                        {loading ? 'Loading...' : '🔄 Refresh'}
+                        {loading ? t("dashboard.loading") : `🔄 ${t("dashboard.refresh")}`}
                     </button>
                 </div>
             </div>
@@ -133,13 +133,21 @@ function Dashboard() {
                 </div>
             )}
 
-            <div className="row g-3 mb-4">
+            <div className="row row-cols-2 row-cols-md-5 g-3 mb-4">
                 <StatCard
                     title={t("dashboard.total_logs")}
                     value={data.totalLogs || 0}
                     color="primary"
                     icon="bi-bar-chart-fill"
                     onClick={() => setFilterSeverity('ALL')}
+                />
+
+                <StatCard
+                    title={t("severity.critical")}
+                    value={data.criticalCount || 0}
+                    color="danger"
+                    icon="bi-shield-fill-exclamation"
+                    onClick={() => setFilterSeverity('CRITICAL')}
                 />
 
                 <StatCard
@@ -171,7 +179,7 @@ function Dashboard() {
             <div className="row g-3 mb-4">
                 <div className="col-12 col-lg-5">
                     <SeverityChart 
-                        critical={Math.round((data.errorCount || 0) * 0.3)}
+                        critical={data.criticalCount || 0}
                         error={data.errorCount || 0}
                         warn={data.warnCount || 0}
                         info={data.infoCount || 0}
@@ -185,22 +193,23 @@ function Dashboard() {
             {/* Filter Pills & Table */}
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="small text-muted fw-semibold me-1">Filter Severity:</span>
-                    {['ALL', 'CRITICAL', 'ERROR', 'WARN', 'INFO'].map(sev => (
-                        <button
-                            key={sev}
-                            className={`btn btn-sm severity-pill-btn ${filterSeverity === sev ? 'btn-primary active' : 'btn-outline-secondary'}`}
-                            onClick={() => setFilterSeverity(sev)}
-                            translate="no"
-                        >
-                            {sev}
-                        </button>
-                    ))}
+                    <span className="small text-muted fw-semibold me-1">{t("dashboard.filter_severity")}</span>
+                    <div className="d-flex flex-wrap gap-2">
+                        {['ALL', 'CRITICAL', 'ERROR', 'WARN', 'INFO'].map(sev => (
+                            <button 
+                                key={sev}
+                                className={`btn btn-sm severity-pill-btn ${filterSeverity === sev ? 'btn-primary active' : 'btn-outline-secondary'}`}
+                                onClick={() => setFilterSeverity(sev)}
+                            >
+                                {t(`badges.${sev.toLowerCase()}`)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {data.lastAnalysis && (
                     <div className="text-muted small">
-                        Last Analysis: {new Date(data.lastAnalysis).toLocaleString('en-US')}
+                        {t("dashboard.last_analysis")} {new Date(data.lastAnalysis).toLocaleString(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}
                     </div>
                 )}
             </div>

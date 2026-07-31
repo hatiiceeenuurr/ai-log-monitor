@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { resetAllLogData } from '../services/api';
 
 function Scan() {
+    const { t } = useTranslation();
     const [resetting, setResetting] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -12,10 +14,10 @@ function Scan() {
         try {
             setResetting(true);
             const res = await resetAllLogData();
-            setMessage(res.message || "All database records have been reset successfully.");
+            setMessage(res.message || t('scan.reset_success'));
         } catch (err) {
             console.error("Reset data error:", err);
-            setMessage("Failed to reset database data.");
+            setMessage(t('scan.reset_fail'));
         } finally {
             setResetting(false);
         }
@@ -24,8 +26,8 @@ function Scan() {
     return (
         <div className="container-fluid p-4">
             <div className="mb-4">
-                <h2 className="fw-bold mb-1">Scan Scheduler & System Status</h2>
-                <p className="text-muted small mb-0">Automated log ingestion, pattern deduplication, and retention policies</p>
+                <h2 className="fw-bold mb-1">{t('scan.title')}</h2>
+                <p className="text-muted small mb-0">{t('scan.subtitle')}</p>
             </div>
 
             {message && (
@@ -41,9 +43,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-primary bg-opacity-10 text-primary rounded-3 fs-3">⏱️</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Ingestion Interval</small>
-                                <h5 className="fw-bold mb-0">Every 15 Mins</h5>
-                                <span className="badge bg-success mt-1">Active Scheduler</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('scan.interval_title')}</small>
+                                <h5 className="fw-bold mb-0">{t('scan.interval_val')}</h5>
+                                <span className="badge bg-success mt-1">{t('scan.interval_badge')}</span>
                             </div>
                         </div>
                     </div>
@@ -54,9 +56,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-success bg-opacity-10 text-success rounded-3 fs-3">🛡️</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Truncate Strategy</small>
-                                <h5 className="fw-bold mb-0">Atomic TRUNCATE</h5>
-                                <span className="badge bg-info text-dark mt-1">Zero Log Loss</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('scan.truncate_title')}</small>
+                                <h5 className="fw-bold mb-0">{t('scan.truncate_val')}</h5>
+                                <span className="badge bg-info text-dark mt-1">{t('scan.truncate_badge')}</span>
                             </div>
                         </div>
                     </div>
@@ -67,9 +69,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-warning bg-opacity-10 text-warning rounded-3 fs-3">🧠</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Deduplication</small>
-                                <h5 className="fw-bold mb-0">SHA-256 Hash</h5>
-                                <span className="badge bg-primary mt-1">Pattern Counter</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('scan.dedup_title')}</small>
+                                <h5 className="fw-bold mb-0">{t('scan.dedup_val')}</h5>
+                                <span className="badge bg-primary mt-1">{t('scan.dedup_badge')}</span>
                             </div>
                         </div>
                     </div>
@@ -80,9 +82,9 @@ function Scan() {
                         <div className="d-flex align-items-center gap-3">
                             <div className="p-3 bg-danger bg-opacity-10 text-danger rounded-3 fs-3">📅</div>
                             <div>
-                                <small className="text-muted fw-bold uppercase d-block">Retention Policy</small>
-                                <h5 className="fw-bold mb-0">14 Days Clean</h5>
-                                <span className="badge bg-secondary mt-1">Nightly Cleanup</span>
+                                <small className="text-muted fw-bold uppercase d-block">{t('scan.retention_title')}</small>
+                                <h5 className="fw-bold mb-0">{t('scan.retention_val')}</h5>
+                                <span className="badge bg-secondary mt-1">{t('scan.retention_badge')}</span>
                             </div>
                         </div>
                     </div>
@@ -90,9 +92,9 @@ function Scan() {
             </div>
 
             <div className="card shadow-sm border-0 rounded-4 p-4 mb-4">
-                <h5 className="fw-bold mb-3">🛠️ Admin Maintenance & Database Management</h5>
+                <h5 className="fw-bold mb-3">{t('scan.admin_title')}</h5>
                 <p className="text-muted small">
-                    Use this administrative action to reset all historical log analyses, PGVector embeddings, and scan records if you wish to restart monitoring from a clean state.
+                    {t('scan.admin_desc')}
                 </p>
                 <div>
                     <button 
@@ -103,9 +105,9 @@ function Scan() {
                         {resetting ? (
                             <>
                                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                Resetting Database...
+                                {t('scan.resetting')}
                             </>
-                        ) : 'Reset Database Records (TRUNCATE)'}
+                        ) : t('scan.reset_btn')}
                     </button>
                 </div>
             </div>
@@ -116,19 +118,19 @@ function Scan() {
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content border-0 shadow-lg rounded-4">
                             <div className="modal-header bg-danger text-white rounded-top-4 border-0">
-                                <h5 className="modal-title fw-bold">⚠️ Confirm Full Reset</h5>
+                                <h5 className="modal-title fw-bold">{t('scan.modal_title')}</h5>
                                 <button type="button" className="btn-close btn-close-white" onClick={() => setShowConfirmModal(false)}></button>
                             </div>
                             <div className="modal-body p-4 text-center">
                                 <div className="mb-3" style={{ fontSize: '4rem' }}>🗑️</div>
-                                <h4 className="fw-bold text-danger">Are you absolutely sure?</h4>
+                                <h4 className="fw-bold text-danger">{t('scan.modal_sure')}</h4>
                                 <p className="text-muted mt-2">
-                                    This action will truncate <strong>all</strong> historical database log analysis records and vector embeddings. This action cannot be undone.
+                                    {t('scan.modal_desc')}
                                 </p>
                             </div>
                             <div className="modal-footer border-0 d-flex justify-content-center pb-4">
-                                <button type="button" className="btn btn-secondary rounded-pill px-4" onClick={() => setShowConfirmModal(false)}>Cancel</button>
-                                <button type="button" className="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onClick={executeReset}>Yes, Reset Everything</button>
+                                <button type="button" className="btn btn-secondary rounded-pill px-4" onClick={() => setShowConfirmModal(false)}>{t('scan.modal_cancel')}</button>
+                                <button type="button" className="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onClick={executeReset}>{t('scan.modal_confirm')}</button>
                             </div>
                         </div>
                     </div>

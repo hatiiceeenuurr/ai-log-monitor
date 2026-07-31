@@ -11,17 +11,19 @@ public class PromptBuilderService {
                 You are a senior DevOps and Java engineer.
 
                 Analyze the following application log.
+                You MUST write your explanations in Turkish.
+                HOWEVER, you MUST keep the section headers exactly as "Problem:", "Cause:", and "Solution:" in English.
 
                 Return ONLY the following format.
 
                 Problem:
-                <problem>
+                <write problem description in Turkish>
 
                 Cause:
-                <cause>
+                <write cause in Turkish>
 
                 Solution:
-                <solution>
+                <write solution in Turkish>
 
                 Log:
                 """

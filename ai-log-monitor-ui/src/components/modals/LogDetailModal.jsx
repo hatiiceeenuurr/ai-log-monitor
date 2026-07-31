@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 
 function LogDetailModal({ log, onClose }) {
-    if (!log) return null;
+    const { t } = useTranslation();
+    
 
     // Escape key & backdrop click to close
     useEffect(() => {
@@ -10,8 +13,19 @@ function LogDetailModal({ log, onClose }) {
         return () => document.removeEventListener('keydown', handleKey);
     }, [onClose]);
 
+    if (!log) return null;
+
     const handleCopy = (text) => {
         navigator.clipboard.writeText(text).catch(() => {});
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        try {
+            return new Date(dateString).toLocaleString('en-US');
+        } catch(e) {
+            return '-';
+        }
     };
 
     return (
@@ -32,11 +46,11 @@ function LogDetailModal({ log, onClose }) {
                                 log.severity === 'ERROR' || log.severity === 'CRITICAL' ? 'bg-danger'
                                 : log.severity === 'WARN' ? 'bg-warning text-dark'
                                 : 'bg-success'
-                            }`}>
+                            }`} translate="no">
                                 {log.severity}
                             </span>
-                            <span className="badge bg-secondary">{log.priority || 'NORMAL'}</span>
-                            <h5 className="modal-title mb-0 ms-2 text-white">Log Analysis Detail #{log.id}</h5>
+                            <span className="badge bg-secondary" translate="no">{log.priority || 'NORMAL'}</span>
+                            <h5 className="modal-title mb-0 ms-2 text-white">{t('modal.title', { id: log.id })}</h5>
                         </div>
                         <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
                     </div>
@@ -44,8 +58,8 @@ function LogDetailModal({ log, onClose }) {
                     <div className="modal-body p-4">
                         {/* Problem */}
                         <div className="mb-3">
-                            <label className="text-muted small fw-bold text-uppercase">Problem Description</label>
-                            <div className="p-3 panel-subtle border-start border-4 border-danger rounded-3 fw-semibold text-danger mt-1">
+                            <label className="text-muted small fw-bold text-uppercase">{t('modal.problem')}</label>
+                            <div className="p-3 panel-subtle border-start border-4 border-danger rounded-3 fw-semibold text-danger mt-1" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
                                 {log.problem || log.logContent}
                             </div>
                         </div>
@@ -53,8 +67,8 @@ function LogDetailModal({ log, onClose }) {
                         {/* Cause */}
                         {log.cause && (
                             <div className="mb-3">
-                                <label className="text-muted small fw-bold text-uppercase">Probable Cause</label>
-                                <div className="p-3 panel-subtle border-start border-4 border-warning rounded-3 mt-1" style={{ color: 'var(--text-main)' }}>
+                                <label className="text-muted small fw-bold text-uppercase">{t('modal.cause')}</label>
+                                <div className="p-3 panel-subtle border-start border-4 border-warning rounded-3 mt-1" style={{ color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
                                     {log.cause}
                                 </div>
                             </div>
@@ -64,16 +78,16 @@ function LogDetailModal({ log, onClose }) {
                         {log.solution && (
                             <div className="mb-3">
                                 <div className="d-flex justify-content-between align-items-center">
-                                    <label className="text-muted small fw-bold text-uppercase">Recommended Solution (AI RAG)</label>
+                                    <label className="text-muted small fw-bold text-uppercase">{t('modal.solution')}</label>
                                     <button
                                         className="btn btn-sm btn-outline-success rounded-pill px-3 copy-btn"
                                         onClick={() => handleCopy(log.solution)}
                                         title="Copy solution to clipboard"
                                     >
-                                        📋 Copy
+                                        📋 {t('modal.copy').replace('📋 ', '')}
                                     </button>
                                 </div>
-                                <div className="p-3 panel-subtle border-start border-4 border-success rounded-3 text-success font-monospace mt-1">
+                                <div className="p-3 panel-subtle border-start border-4 border-success rounded-3 text-success font-monospace mt-1" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
                                     {log.solution}
                                 </div>
                             </div>
@@ -83,29 +97,29 @@ function LogDetailModal({ log, onClose }) {
                         <div className="row g-2 mb-3">
                             <div className="col-md-6">
                                 <div className="p-2 panel-subtle rounded text-muted small">
-                                    <strong>First Seen:</strong> {new Date(log.analyzedAt).toLocaleString('en-US')}
+                                    <strong>{t('modal.first_seen')}</strong> {formatDate(log.analyzedAt)}
                                 </div>
                             </div>
                             <div className="col-md-6">
                                 <div className="p-2 panel-subtle rounded text-muted small">
-                                    <strong>Last Seen:</strong> {log.lastSeenAt ? new Date(log.lastSeenAt).toLocaleString('en-US') : '-'}
+                                    <strong>{t('modal.last_seen')}</strong> {formatDate(log.lastSeenAt)}
                                 </div>
                             </div>
                             <div className="col-md-6">
                                 <div className="p-2 panel-subtle rounded text-muted small">
-                                    <strong>Repeat Count:</strong> {log.occurrenceCount || 1}x
+                                    <strong>{t('modal.repeats')}</strong> {log.occurrenceCount || 1}x
                                 </div>
                             </div>
                             <div className="col-md-6">
                                 <div className="p-2 panel-subtle rounded text-muted small">
-                                    <strong>Priority:</strong> {log.priority || 'NORMAL'}
+                                    <strong>{t('modal.priority')}</strong> {log.priority || 'NORMAL'}
                                 </div>
                             </div>
                         </div>
 
                         {/* Raw Log */}
                         <div>
-                            <label className="text-muted small fw-bold text-uppercase">Raw Log Message</label>
+                            <label className="text-muted small fw-bold text-uppercase">{t('modal.raw_log')}</label>
                             <pre className="p-3 bg-dark text-light rounded-3 font-monospace small mb-0 mt-1" style={{ overflowX: 'auto' }} translate="no">
                                 <code>{log.logContent}</code>
                             </pre>

@@ -29,7 +29,7 @@ function StatCard({ title, value, color, icon, onClick }) {
     }, [value]);
 
     return (
-        <div className="col-md-3 mb-4">
+        <div className="col mb-4">
             <div 
                 className={`card border-0 shadow-sm bg-${color} text-white h-100 stat-card-hover`}
                 onClick={onClick}
@@ -37,7 +37,7 @@ function StatCard({ title, value, color, icon, onClick }) {
             >
                 <div className="card-body text-center d-flex flex-column justify-content-center align-items-center">
                     {icon && <i className={`bi ${icon} fs-1 mb-2 opacity-75`}></i>}
-                    <h5 className="card-title fw-bold small text-uppercase opacity-75 mb-1">
+                    <h5 className="card-title fw-bold small text-uppercase opacity-75 mb-1" translate="no">
                         {title}
                     </h5>
                     <h1 className="display-5 fw-bold mb-0">

@@ -4,7 +4,7 @@ import { searchLogs } from '../services/api';
 import LogDetailModal from '../components/modals/LogDetailModal';
 
 function RagSearch() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -20,6 +20,19 @@ function RagSearch() {
         t("rag.sample_5")
     ];
 
+    const translateText = async (text, targetLang) => {
+        if (!text) return text;
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+            const res = await fetch(url);
+            const json = await res.json();
+            return json[0].map(item => item[0]).join('');
+        } catch (e) {
+            console.error("Translation error", e);
+            return text;
+        }
+    };
+
     const handleSearch = async (searchQuery = query) => {
         if (!searchQuery.trim()) return;
         
@@ -27,7 +40,15 @@ function RagSearch() {
             setLoading(true);
             setSearched(true);
             setError(null);
-            const data = await searchLogs(searchQuery.trim());
+            
+            // Cross-lingual RAG: Translate query to English for better vector matching
+            let searchTarget = searchQuery.trim();
+            if (i18n.language !== 'en') {
+                searchTarget = await translateText(searchTarget, 'en');
+                console.log("Cross-lingual RAG: Translated query to:", searchTarget);
+            }
+            
+            const data = await searchLogs(searchTarget);
             setResults(data || []);
         } catch (err) {
             console.error("Vector search failed:", err);

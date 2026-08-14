@@ -1,10 +1,43 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-
 function LogDetailModal({ log, onClose }) {
-    const { t } = useTranslation();
-    
+    const { t, i18n } = useTranslation();
+    const [translatedContent, setTranslatedContent] = useState({ problem: null, cause: null, solution: null });
+
+    // Translation function
+    const translateText = async (text, targetLang) => {
+        if (!text) return null;
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+            const res = await fetch(url);
+            const json = await res.json();
+            return json[0].map(item => item[0]).join('');
+        } catch (e) {
+            console.error("Translation error", e);
+            return text; // Fallback to original
+        }
+    };
+
+    // Trigger translation when language or log changes
+    useEffect(() => {
+        if (!log) return;
+        
+        // If current language is English and text is already English, no need to translate
+        if (i18n.language === 'en') {
+            setTranslatedContent({ problem: log.problem, cause: log.cause, solution: log.solution });
+            return;
+        }
+
+        const fetchTranslations = async () => {
+            const p = await translateText(log.problem, i18n.language);
+            const c = await translateText(log.cause, i18n.language);
+            const s = await translateText(log.solution, i18n.language);
+            setTranslatedContent({ problem: p, cause: c, solution: s });
+        };
+        
+        fetchTranslations();
+    }, [log, i18n.language]);
 
     // Escape key & backdrop click to close
     useEffect(() => {
@@ -60,7 +93,7 @@ function LogDetailModal({ log, onClose }) {
                         <div className="mb-3">
                             <label className="text-muted small fw-bold text-uppercase">{t('modal.problem')}</label>
                             <div className="p-3 panel-subtle border-start border-4 border-danger rounded-3 fw-semibold text-danger mt-1" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
-                                {log.problem || log.logContent}
+                                {translatedContent.problem || log.problem || log.logContent}
                             </div>
                         </div>
 
@@ -69,7 +102,7 @@ function LogDetailModal({ log, onClose }) {
                             <div className="mb-3">
                                 <label className="text-muted small fw-bold text-uppercase">{t('modal.cause')}</label>
                                 <div className="p-3 panel-subtle border-start border-4 border-warning rounded-3 mt-1" style={{ color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
-                                    {log.cause}
+                                    {translatedContent.cause || log.cause}
                                 </div>
                             </div>
                         )}
@@ -81,14 +114,14 @@ function LogDetailModal({ log, onClose }) {
                                     <label className="text-muted small fw-bold text-uppercase">{t('modal.solution')}</label>
                                     <button
                                         className="btn btn-sm btn-outline-success rounded-pill px-3 copy-btn"
-                                        onClick={() => handleCopy(log.solution)}
+                                        onClick={() => handleCopy(translatedContent.solution || log.solution)}
                                         title="Copy solution to clipboard"
                                     >
                                         📋 {t('modal.copy').replace('📋 ', '')}
                                     </button>
                                 </div>
                                 <div className="p-3 panel-subtle border-start border-4 border-success rounded-3 text-success font-monospace mt-1" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }} translate="yes">
-                                    {log.solution}
+                                    {translatedContent.solution || log.solution}
                                 </div>
                             </div>
                         )}

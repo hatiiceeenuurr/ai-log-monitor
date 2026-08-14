@@ -11,12 +11,30 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class SlackNotificationService {
 
-    @Value("${slack.webhook.url}")
-    private String webhookUrl;
-
     private final RestTemplate restTemplate = new RestTemplate();
+    private final com.teknokent.ailogmonitor.repository.AppSettingRepository appSettingRepository;
+
+    public SlackNotificationService(com.teknokent.ailogmonitor.repository.AppSettingRepository appSettingRepository) {
+        this.appSettingRepository = appSettingRepository;
+    }
+
 
     public void send(LogAnalysis analysis) {
+        // 1. Check if Slack is enabled
+        String isEnabled = appSettingRepository.findById("slack_enabled")
+                .map(com.teknokent.ailogmonitor.entity.AppSetting::getSettingValue)
+                .orElse("false");
+
+        if (!"true".equalsIgnoreCase(isEnabled)) {
+            System.out.println("SLACK NOTIFICATION -> Skipping alert (Slack integration is disabled in settings).");
+            return;
+        }
+
+        // 2. Get the Webhook URL
+        String webhookUrl = appSettingRepository.findById("slack_webhook_url")
+                .map(com.teknokent.ailogmonitor.entity.AppSetting::getSettingValue)
+                .orElse(null);
+
         if (webhookUrl == null || webhookUrl.isBlank() || !webhookUrl.startsWith("http")) {
             System.out.println("SLACK NOTIFICATION -> Skipping alert (Webhook URL is not configured).");
             return;

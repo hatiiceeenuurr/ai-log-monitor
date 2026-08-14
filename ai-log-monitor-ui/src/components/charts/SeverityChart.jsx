@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
-    const { t } = useLanguage();
+    const { t } = useTranslation();
     const [hovered, setHovered] = useState(null);
 
     const total = critical + error + warn + info;
@@ -16,15 +16,15 @@ function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
     }
 
     const data = [
-        { label: 'CRITICAL', count: critical, color: '#dc3545', lightColor: '#ff6b6b' },
-        { label: 'ERROR', count: error, color: '#fd7e14', lightColor: '#ff922b' },
-        { label: 'WARN', count: warn, color: '#ffc107', lightColor: '#ffe066' },
-        { label: 'INFO', count: info, color: '#0d6efd', lightColor: '#4dabf7' }
-    ].filter(item => item.count > 0);
+        { label: 'CRITICAL', labelKey: 'critical', count: critical, color: '#dc3545', lightColor: '#ff6b6b' },
+        { label: 'ERROR', labelKey: 'error', count: error, color: '#fd7e14', lightColor: '#ff922b' },
+        { label: 'WARN', labelKey: 'warn', count: warn, color: '#ffc107', lightColor: '#ffe066' },
+        { label: 'INFO', labelKey: 'info', count: info, color: '#0d6efd', lightColor: '#4dabf7' }
+    ];
 
     // Calculate SVG Donut Arcs
-    const radius = 65;
-    const strokeWidth = 24;
+    const radius = 68;
+    const strokeWidth = 18;
     const center = 100;
     const circumference = 2 * Math.PI * radius;
 
@@ -35,10 +35,10 @@ function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="fw-bold mb-0 text-uppercase tracking-wider">
                     <i className="bi bi-pie-chart-fill me-2 text-primary"></i>
-                    {t('severityBreakdown')}
+                    {t('charts.severity_title')}
                 </h6>
                 <span className="badge bg-secondary-subtle text-body rounded-pill px-3 py-1">
-                    {total} {t('tbCount')}
+                    {total} {t('charts.total_logs')}
                 </span>
             </div>
 
@@ -75,9 +75,11 @@ function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
                             );
                         })}
                     </svg>
-                    <div className="donut-center-text">
+                    <div className="donut-center-text" translate="no">
                         <div className="fw-bold fs-4">{hovered ? data.find(d => d.label === hovered)?.count : total}</div>
-                        <small className="text-muted">{hovered || 'Total Logs'}</small>
+                        <div className="text-muted" style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                            {hovered ? t(`severity.${data.find(d => d.label === hovered)?.labelKey}`) : t('charts.total_logs')}
+                        </div>
                     </div>
                 </div>
 
@@ -96,7 +98,7 @@ function SeverityChart({ critical = 0, error = 0, warn = 0, info = 0 }) {
                                 >
                                     <div className="d-flex align-items-center gap-2">
                                         <span className="legend-dot" style={{ backgroundColor: item.color }}></span>
-                                        <span className="fw-semibold small">{item.label}</span>
+                                        <span className="fw-semibold small" translate="no">{t(`severity.${item.labelKey}`)}</span>
                                     </div>
                                     <div className="text-end">
                                         <span className="fw-bold small me-2">{item.count}</span>

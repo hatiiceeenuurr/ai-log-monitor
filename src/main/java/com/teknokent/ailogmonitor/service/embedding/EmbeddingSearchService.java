@@ -74,18 +74,20 @@ public class EmbeddingSearchService {
 
             // Calculate raw cosine similarity percentage
             double rawSimilarity = (1.0 - distance) * 100.0;
-            rawSimilarity = Math.max(0.0, Math.min(100.0, rawSimilarity));
+            rawSimilarity = Math.clamp(rawSimilarity, 0.0, 100.0);
 
             // Strict Threshold Filtering: Filter out irrelevant logs below threshold
             if (rawSimilarity < SIMILARITY_THRESHOLD) {
-                log.info("Candidate ID {} skipped due to low similarity ({:.2f}% < {:.0f}%)",
-                        embeddingResult.getLogAnalysis().getId(), rawSimilarity, SIMILARITY_THRESHOLD);
+                log.info("Candidate ID {} skipped due to low similarity ({}% < {}%)",
+                        embeddingResult.getLogAnalysis().getId(), 
+                        String.format("%.2f", rawSimilarity), 
+                        String.format("%.0f", SIMILARITY_THRESHOLD));
                 continue;
             }
 
             // Calibrated Linear Scaling: Map [70%, 100%] to dynamic intuitive range [30%, 98%]
             double calibratedSimilarity = ((rawSimilarity - SIMILARITY_THRESHOLD) / (100.0 - SIMILARITY_THRESHOLD)) * 68.0 + 30.0;
-            calibratedSimilarity = Math.max(30.0, Math.min(99.0, calibratedSimilarity));
+            calibratedSimilarity = Math.clamp(calibratedSimilarity, 30.0, 99.0);
 
             log.info(
                     "LogId={} RawSimilarity={}% CalibratedSimilarity={}% Distance={}",

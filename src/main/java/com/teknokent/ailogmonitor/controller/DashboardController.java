@@ -5,6 +5,7 @@ import com.teknokent.ailogmonitor.service.DashboardService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -19,5 +20,10 @@ public class DashboardController {
     @GetMapping
     public DashboardResponse getDashboard() {
         return dashboardService.getDashboardData();
+    }
+
+    @GetMapping("/daily")
+    public List<Object[]> getDailyAnalysis() {
+        return dashboardService.getDailyAnalysis();
     }
 }

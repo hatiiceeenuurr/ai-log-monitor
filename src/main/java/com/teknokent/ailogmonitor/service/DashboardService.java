@@ -21,6 +21,8 @@ public class DashboardService {
 
         long totalLogs = logAnalysisRepository.count();
 
+        long criticalCount = logAnalysisRepository.countBySeverity("CRITICAL");
+
         long errorCount = logAnalysisRepository.countBySeverity("ERROR");
 
         long warnCount = logAnalysisRepository.countBySeverity("WARN");
@@ -38,11 +40,16 @@ public class DashboardService {
 
         return new DashboardResponse(
                 totalLogs,
+                criticalCount,
                 errorCount,
                 warnCount,
                 infoCount,
                 lastAnalysis,
                 recentLogs
         );
+    }
+
+    public List<Object[]> getDailyAnalysis() {
+        return logAnalysisRepository.getDailyAnalysisCounts();
     }
 }

@@ -39,6 +39,15 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, textarea, select, .solution-code-box, code, pre {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 #root {
@@ -72,6 +81,24 @@ h1, h2, h3, h4, h5, h6 {
 .navbar {
   background-color: var(--nav-bg) !important;
   border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Analysis Pagination Container */
+.pagination {
+  margin-bottom: 0;
+}
+
+/* StatCard Hover Effect */
+.stat-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+}
+
+[data-theme="dark"] .stat-card-hover:hover {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
 }
 
 /* Pulsing Green Dot */
@@ -186,3 +213,110 @@ body.dark-theme .modal-content {
   color: var(--text-main) !important;
   border: 1px solid var(--border-color);
 }
+
+body.dark-theme .card-header.bg-dark {
+  background-color: var(--bg-card-subtle) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+body.light-theme .card-header.bg-dark {
+  background-color: #1e293b !important;
+}
+
+body.dark-theme .input-group-text {
+  background-color: var(--bg-card-subtle) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+body.dark-theme .table-light {
+  --bs-table-bg: var(--bg-card-subtle);
+  color: var(--text-muted) !important;
+}
+
+body.dark-theme .border {
+  border-color: var(--border-color) !important;
+}
+
+/* Severity Pill Buttons (Dashboard filter) */
+.severity-pill-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 20px !important;
+  padding: 4px 14px;
+  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+}
+
+.severity-pill-btn.active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Sidebar CSS variable based */
+.sidebar-nav {
+  background-color: var(--nav-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar-nav .nav-link {
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav .nav-link:hover {
+  color: var(--text-main);
+  background-color: var(--bg-card-subtle);
+}
+
+.sidebar-nav .nav-link.active {
+  background-color: var(--bs-primary, #3b82f6);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Theme-aware panel backgrounds */
+.panel-subtle {
+  background-color: var(--bg-card-subtle) !important;
+  color: var(--text-main) !important;
+}
+
+/* Toast notification */
+.live-toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 320px;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Hide Google Translate Widget */
+.VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
+.goog-te-banner-frame { display: none !important; }
+.skiptranslate { display: none !important; }
+body { top: 0 !important; }
+#google_translate_element { display: none !important; }

@@ -21,6 +21,15 @@ public interface LogAnalysisRepository
 
     Page<LogAnalysis> findAllByOrderByAnalyzedAtDesc(Pageable pageable);
 
+    @Query("SELECT l FROM LogAnalysis l WHERE " +
+           "(:severity IS NULL OR :severity = 'ALL' OR UPPER(l.severity) = UPPER(:severity)) AND " +
+           "(:search IS NULL OR :search = '' OR LOWER(l.problem) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(l.logContent) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(l.solution) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY l.analyzedAt DESC")
+    Page<LogAnalysis> findByFilterAndSearch(
+            @org.springframework.data.repository.query.Param("severity") String severity, 
+            @org.springframework.data.repository.query.Param("search") String search, 
+            Pageable pageable);
+
     Optional<LogAnalysis> findFirstByLogContentOrderByAnalyzedAtDesc(String logContent);
 
     Optional<LogAnalysis> findFirstByNormalizedHashOrderByAnalyzedAtDesc(String normalizedHash);

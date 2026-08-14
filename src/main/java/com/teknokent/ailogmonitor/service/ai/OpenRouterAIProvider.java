@@ -26,8 +26,8 @@ public class OpenRouterAIProvider implements AIProvider {
 
         AIRequest request = new AIRequest();
 
-        request.setModel("openai/gpt-4.1-mini");
-        request.setMax_tokens(500);
+        request.setModel("google/gemini-2.5-flash");
+        request.setMax_tokens(800);
         request.setTemperature(0.2);
 
         request.setMessages(List.of(

@@ -26,7 +26,7 @@ public class ScenarioService {
     );
 
     public LogScenario getRandomScenario() {
-        int choice = random.nextInt(8);
+        int choice = random.nextInt(9);
         return switch (choice) {
             case 0 -> createDatabaseTimeoutScenario();
             case 1 -> createRedisLatencyScenario();
@@ -35,6 +35,7 @@ public class ScenarioService {
             case 4 -> createHttpGatewayErrorScenario();
             case 5 -> createKafkaBrokerFailureScenario();
             case 6 -> createDiskSpaceWarningScenario();
+            case 7 -> createSystemCrashScenario();
             default -> createCircuitBreakerScenario();
         };
     }
@@ -129,9 +130,19 @@ public class ScenarioService {
         List<String> logs = List.of(
                 "INFO [system-monitor] Storage check executed on /var/log volume",
                 "WARN [system-monitor] Low disk space warning: Only %dMB remaining on /var/log".formatted(freeMb),
-                "ERROR [system-monitor] java.io.IOException: No space left on device while flushing transaction log".formatted()
+                "CRITICAL [system-monitor] java.io.IOException: No space left on device while flushing transaction log. DATA LOSS IMMINENT!".formatted()
         );
         return new LogScenario("Low Disk Space I/O Exception", logs);
+    }
+
+    private LogScenario createSystemCrashScenario() {
+        String service = getRandom(services);
+        List<String> logs = List.of(
+                "WARN [%s] Multiple services reporting unresponsiveness from central core".formatted(service),
+                "ERROR [%s] Core component failure, attempting to restart subsystem...".formatted(service),
+                "CRITICAL [%s] SYSTEM HALTED: Kernel panic or unrecoverable hardware fault detected on primary node!".formatted(service)
+        );
+        return new LogScenario("Critical System Crash", logs);
     }
 
     private LogScenario createCircuitBreakerScenario() {

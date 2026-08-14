@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { requestPasswordResetCode, confirmPasswordReset } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 function Login() {
-    const { t } = useLanguage();
+    const { t } = useTranslation();
     const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -20,7 +21,6 @@ function Login() {
     const [resetStep, setResetStep] = useState(1); // 1: Enter Email, 2: Enter OTP & New Password
     const [resetEmail, setResetEmail] = useState('');
     const [otpCodeInput, setOtpCodeInput] = useState('');
-    const [generatedOtp, setGeneratedOtp] = useState('');
     const [newResetPassword, setNewResetPassword] = useState('');
     const [resetMsg, setResetMsg] = useState({ type: '', text: '' });
     const [resetLoading, setResetLoading] = useState(false);
@@ -118,6 +118,11 @@ function Login() {
             return;
         }
 
+        if (!/^\d{6}$/.test(otpCodeInput.trim())) {
+            setResetMsg({ type: 'danger', text: 'OTP code must be exactly 6 digits.' });
+            return;
+        }
+
         if (newResetPassword.trim().length < 6) {
             setResetMsg({ type: 'danger', text: 'New password must be at least 6 characters long.' });
             return;
@@ -173,14 +178,14 @@ function Login() {
                                 className={`btn btn-sm w-50 rounded-2 fw-semibold transition-all ${!isRegister ? 'btn-primary shadow' : 'btn-link text-secondary text-decoration-none'}`}
                                 onClick={() => { setIsRegister(false); setError(''); }}
                             >
-                                {t('loginBtn')}
+                                {t('auth.sign_in')}
                             </button>
                             <button 
                                 type="button"
                                 className={`btn btn-sm w-50 rounded-2 fw-semibold transition-all ${isRegister ? 'btn-primary shadow' : 'btn-link text-secondary text-decoration-none'}`}
                                 onClick={() => { setIsRegister(true); setError(''); }}
                             >
-                                Sign Up
+                                {t('auth.sign_up')}
                             </button>
                         </div>
 
@@ -192,11 +197,11 @@ function Login() {
 
                         <form onSubmit={handleSubmit}>
                             <div className="mb-3">
-                                <label className="form-label small text-secondary fw-semibold">Username</label>
+                                <label className="form-label small text-secondary fw-semibold">{t('auth.username')}</label>
                                 <input 
                                     type="text" 
                                     className="form-control bg-dark bg-opacity-50 border-secondary border-opacity-25 text-white rounded-3 shadow-none" 
-                                    placeholder="Enter your username"
+                                    placeholder={t('auth.username_placeholder')}
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     required
@@ -205,11 +210,11 @@ function Login() {
 
                             {isRegister && (
                                 <div className="mb-3">
-                                    <label className="form-label small text-secondary fw-semibold">Email Address</label>
+                                    <label className="form-label small text-secondary fw-semibold">{t('auth.email')}</label>
                                     <input 
                                         type="email" 
                                         className="form-control bg-dark bg-opacity-50 border-secondary border-opacity-25 text-white rounded-3 shadow-none" 
-                                        placeholder="name@example.com"
+                                        placeholder={t('auth.email_placeholder')}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -219,14 +224,14 @@ function Login() {
 
                             <div className="mb-2">
                                 <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <label className="form-label small text-secondary fw-semibold mb-0">Password</label>
+                                    <label className="form-label small text-secondary fw-semibold mb-0">{t('auth.password')}</label>
                                     {!isRegister && (
                                         <button 
                                             type="button" 
                                             className="btn btn-link p-0 text-info small text-decoration-none"
                                             onClick={() => { setShowForgotModal(true); setResetStep(1); setResetMsg({ type: '', text: '' }); }}
                                         >
-                                            Forgot Password?
+                                            {t('auth.forgot_password')}
                                         </button>
                                     )}
                                 </div>
@@ -234,7 +239,7 @@ function Login() {
                                     <input 
                                         type={showPassword ? "text" : "password"} 
                                         className="form-control bg-dark bg-opacity-50 border-secondary border-opacity-25 text-white rounded-start-3 shadow-none border-end-0" 
-                                        placeholder="••••••••"
+                                        placeholder={t('auth.password_placeholder')}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -259,7 +264,7 @@ function Login() {
                                     onChange={(e) => setRememberMe(e.target.checked)}
                                 />
                                 <label className="form-check-label small text-secondary" htmlFor="rememberMeCheck">
-                                    Remember me (Keep session active on this device)
+                                    {t('auth.remember_me')}
                                 </label>
                             </div>
 
@@ -270,7 +275,7 @@ function Login() {
                             >
                                 {loading ? (
                                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                ) : isRegister ? 'Create Account & Sign In' : 'Sign In'}
+                                ) : isRegister ? t('auth.create_account') : t('auth.sign_in')}
                             </button>
                         </form>
 
@@ -278,7 +283,7 @@ function Login() {
                             <>
                                 <div className="text-center my-3 position-relative">
                                     <hr className="border-secondary opacity-25" />
-                                    <span className="position-absolute top-50 start-50 translate-middle bg-dark px-2 text-secondary small">or</span>
+                                    <span className="position-absolute top-50 start-50 translate-middle bg-dark px-2 text-secondary small">{t('auth.or')}</span>
                                 </div>
 
                                 <button 
@@ -287,7 +292,7 @@ function Login() {
                                     onClick={handleQuickAdminLogin}
                                     disabled={loading}
                                 >
-                                    🚀 One-Click Admin Demo Login (admin / admin123)
+                                    {t('auth.demo_login')}
                                 </button>
                             </>
                         )}
@@ -295,7 +300,7 @@ function Login() {
                 </div>
 
                 <p className="text-center text-secondary small mt-4">
-                    AI Log Monitor System &copy; 2026
+                    {t('auth.footer_text')}
                 </p>
             </div>
 
@@ -305,7 +310,7 @@ function Login() {
                     <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '440px' }}>
                         <div className="modal-content shadow-lg border-0 rounded-4 bg-dark text-white border border-secondary border-opacity-25">
                             <div className="modal-header border-bottom border-secondary border-opacity-25 p-3">
-                                <h5 className="modal-title fw-bold text-white fs-6">🔒 Password Reset & OTP Verification</h5>
+                                <h5 className="modal-title fw-bold text-white fs-6">{t('auth.reset_title')}</h5>
                                 <button type="button" className="btn-close btn-close-white" onClick={() => setShowForgotModal(false)}></button>
                             </div>
 
@@ -319,11 +324,11 @@ function Login() {
                                 {resetStep === 1 ? (
                                     <form onSubmit={handleRequestOtp}>
                                         <p className="text-secondary small mb-3">
-                                            Enter your registered email address or username. We will generate a 6-digit verification code (OTP) to prove account ownership.
+                                            {t('auth.reset_step1_desc')}
                                         </p>
 
                                         <div className="mb-4">
-                                            <label className="form-label small text-secondary fw-semibold">Email or Username</label>
+                                            <label className="form-label small text-secondary fw-semibold">{t('auth.email_or_username')}</label>
                                             <input 
                                                 type="text" 
                                                 className="form-control bg-dark bg-opacity-50 border-secondary text-white rounded-3 shadow-none" 
@@ -336,25 +341,25 @@ function Login() {
 
                                         <div className="d-flex justify-content-end gap-2">
                                             <button type="button" className="btn btn-secondary btn-sm rounded-pill px-3" onClick={() => setShowForgotModal(false)}>
-                                                Cancel
+                                                {t('auth.cancel')}
                                             </button>
                                             <button type="submit" className="btn btn-primary btn-sm rounded-pill px-4 fw-bold" disabled={resetLoading}>
-                                                {resetLoading ? 'Sending...' : 'Send Verification Code 📩'}
+                                                {resetLoading ? t('auth.sending') : t('auth.send_code')}
                                             </button>
                                         </div>
                                     </form>
                                 ) : (
                                     <form onSubmit={handleConfirmReset}>
                                         <p className="text-secondary small mb-3">
-                                            Enter the 6-digit OTP code sent to <strong>{resetEmail}</strong> and your new password.
+                                            {t('auth.reset_step2_desc_1')} <strong>{resetEmail}</strong> {t('auth.reset_step2_desc_2')}
                                         </p>
 
                                         <div className="mb-3">
-                                            <label className="form-label small text-secondary fw-semibold">6-Digit OTP Code</label>
+                                            <label className="form-label small text-secondary fw-semibold">{t('auth.otp_code')}</label>
                                             <input 
                                                 type="text" 
                                                 className="form-control bg-dark bg-opacity-50 border-secondary text-white rounded-3 shadow-none font-monospace text-center fs-4 letter-spacing-2" 
-                                                placeholder="000000"
+                                                placeholder={t('auth.otp_placeholder')}
                                                 maxLength={6}
                                                 value={otpCodeInput}
                                                 onChange={(e) => setOtpCodeInput(e.target.value)}
@@ -363,11 +368,11 @@ function Login() {
                                         </div>
 
                                         <div className="mb-4">
-                                            <label className="form-label small text-secondary fw-semibold">New Password</label>
+                                            <label className="form-label small text-secondary fw-semibold">{t('auth.new_password')}</label>
                                             <input 
                                                 type="password" 
                                                 className="form-control bg-dark bg-opacity-50 border-secondary text-white rounded-3 shadow-none" 
-                                                placeholder="Enter new password (min 6 chars)"
+                                                placeholder={t('auth.new_password_placeholder')}
                                                 value={newResetPassword}
                                                 onChange={(e) => setNewResetPassword(e.target.value)}
                                                 required
@@ -376,14 +381,14 @@ function Login() {
 
                                         <div className="d-flex justify-content-between align-items-center">
                                             <button type="button" className="btn btn-link text-secondary btn-sm p-0 text-decoration-none" onClick={() => setResetStep(1)}>
-                                                &laquo; Back
+                                                {t('auth.back')}
                                             </button>
                                             <div className="d-flex gap-2">
                                                 <button type="button" className="btn btn-secondary btn-sm rounded-pill px-3" onClick={() => setShowForgotModal(false)}>
-                                                    Cancel
+                                                    {t('auth.cancel')}
                                                 </button>
                                                 <button type="submit" className="btn btn-success btn-sm rounded-pill px-4 fw-bold" disabled={resetLoading}>
-                                                    {resetLoading ? 'Resetting...' : 'Reset Password 🔒'}
+                                                    {resetLoading ? t('auth.resetting') : t('auth.reset_password_btn')}
                                                 </button>
                                             </div>
                                         </div>

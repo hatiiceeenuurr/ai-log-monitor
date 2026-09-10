@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>AI Log Monitor - Staj Sunumu</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css" id="theme">
+    
+    <style>
+        .reveal .slide-background {
+            background: linear-gradient(135deg, #121212 0%, #1e3c72 50%, #2a5298 100%);
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #00d2ff;
+            text-transform: none;
+            font-weight: 600;
+        }
+        .reveal p, .reveal li {
+            color: #f0f0f0;
+            font-size: 0.8em;
+            line-height: 1.5;
+        }
+        .highlight {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        .tech-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 18px;
+            margin: 8px;
+            font-size: 0.65em;
+            border: 1px solid #00d2ff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+        .flex-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .box {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #00d2ff;
+            text-align: left;
+            margin-bottom: 20px;
+            width: 45%;
+        }
+        .full-box {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #ffaa00;
+            text-align: left;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .reveal h2 {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
+        .reveal h4 {
+            font-size: 1.0em;
+            margin-bottom: 10px;
+        }
+        .reveal ul {
+            margin-left: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slayt 1: Kapak -->
+            <section data-transition="zoom">
+                <h1>AI Log Monitor</h1>
+                <h3>Yapay Zeka Destekli Akıllı Log Analiz ve Çözüm Platformu</h3>
+                <p style="margin-top: 50px;">
+                    <small>Yazılım Mühendisliği Stajyeri: <strong style="color:#ffaa00;">Hatice Nur Filizoğlu</strong></small><br>
+                    <small>Kurum: <strong>Lastgen Software</strong></small>
+                </p>
+            </section>
+
+            <!-- Slayt 2: Problem ve Motivasyon -->
+            <section data-transition="slide">
+                <h2>Projenin Amacı ve Çözdüğü Problem</h2>
+                <div class="full-box">
+                    <h4 style="color: #00d2ff;">Mevcut Zorluklar</h4>
+                    <ul>
+                        <li class="fragment fade-up">Büyük sistemlerde günlük binlerce anlamsız log ve hata üretilir.</li>
+                        <li class="fragment fade-up">Yazılımcılar bu karmaşık hataların (Stack Trace) <span class="highlight">kök nedenini</span> bulmak için saatler harcar.</li>
+                        <li class="fragment fade-up">Hatalar bulunduğunda çözüm için manuel forum (StackOverflow) araştırması yapılır.</li>
+                    </ul>
+                </div>
+                <div class="full-box fragment fade-up">
+                    <h4 style="color: #ffaa00;">Bizim Çözümümüz</h4>
+                    <p>Hataları sadece depolayan değil; okuyan, anlayan, <strong>Yapay Zeka (LLM) ile kendi kendine çözüm üreten</strong> ve geçmiş hataları <strong>Anlamsal Arama (Semantic RAG)</strong> ile sorgulatan akıllı bir otonom asistan geliştirmek.</p>
+                </div>
+            </section>
+
+            <!-- Slayt 3: Mimari ve Teknolojiler -->
+            <section data-transition="convex">
+                <h2>Uçtan Uca Mimari (Tech Stack)</h2>
+                <div class="flex-container" style="justify-content: center;">
+                    <div class="tech-badge fragment zoom-in">☕ Java 21 & Spring Boot (Backend)</div>
+                    <div class="tech-badge fragment zoom-in">⚛️ React & TailwindCSS (Frontend)</div>
+                    <div class="tech-badge fragment zoom-in">🐘 PostgreSQL & pgvector (Database)</div>
+                    <div class="tech-badge fragment zoom-in">🧠 Ollama (Local AI Model)</div>
+                    <div class="tech-badge fragment zoom-in">☁️ Google Gemini 2.5 (Cloud Fallback)</div>
+                    <div class="tech-badge fragment zoom-in">💬 Slack Webhook (Integration)</div>
+                    <div class="tech-badge fragment zoom-in">🐳 Docker (Deployment)</div>
+                </div>
+                <p class="fragment fade-up" style="margin-top: 30px;">
+                    Güvenli, ölçeklenebilir ve modern yazılım prensiplerine (Clean Code) uygun bir kurumsal mimari tasarlandı.
+                </p>
+            </section>
+
+            <!-- Slayt 4: Geliştirilen Modüller 1 (İkiye Bölündü - A) -->
+            <section data-transition="fade">
+                <h2>Temel Modüller (1/3)</h2>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #ffaa00; font-size: 1.1em;">1. Sentetik Log Simülasyon Motoru</strong><br>
+                    <p>Sistemi beslemek için gerçek dünyadaki "Database Timeout, Out of Memory, Disk Space" gibi karmaşık kriz senaryolarını rastgele üreten arka plan servisi yazıldı.</p>
+                </div>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #ffaa00; font-size: 1.1em;">2. Dinamik Dashboard & Veri Görselleştirme</strong><br>
+                    <p>React ve Recharts kullanılarak logların ciddiyet derecelerine (INFO, WARN, ERROR, CRITICAL) göre anlık istatistiklerini veren ve zaman çizelgesini çizen paneller tasarlandı.</p>
+                </div>
+            </section>
+
+            <!-- Slayt 5: Geliştirilen Modüller 1 (İkiye Bölündü - B) -->
+            <section data-transition="fade">
+                <h2>Temel Modüller (2/3)</h2>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #ffaa00; font-size: 1.1em;">3. Çok Dilli ve Temalı Modern Arayüz</strong><br>
+                    <p>i18n (Internationalization) ile İngilizce/Türkçe dil desteği eklendi. Ayrıca Context API ile sistem genelinde Gece/Gündüz (Dark/Light) tema geçişi sağlandı.</p>
+                </div>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #ffaa00; font-size: 1.1em;">4. Gerçek Zamanlı Slack Uyarıları</strong><br>
+                    <p>Sistemde CRITICAL veya FATAL bir çökme yaşandığında, yapay zekanın analiziyle birlikte otomatik olarak kurumsal Slack kanalına anlık uyarı (Webhook) gönderilmesi sağlandı.</p>
+                </div>
+            </section>
+
+            <!-- Slayt 6: Geliştirilen Modüller 2 (AI Core) - Bölüm A -->
+            <section data-transition="slide">
+                <h2>Yapay Zeka Çekirdeği (3/3)</h2>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #ffaa00; font-size: 1.1em;">5. Otonom Kök Neden Analizi</strong>
+                    <p>LLM'ler için özel "Prompt Engineering" uygulandı. Yapay zeka karmaşık Stack Trace'leri okuyarak cevabını üç net parçaya bölüyor: <br>
+                    <span style="color:#ff6b6b; font-weight:bold;">Problem Nedir?</span> | <span style="color:#feca57; font-weight:bold;">Kök Nedeni Ne?</span> | <span style="color:#1dd1a1; font-weight:bold;">Nasıl Çözülür?</span></p>
+                </div>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #ffaa00; font-size: 1.1em;">6. Hibrid Yapay Zeka Mimarisi</strong>
+                    <p>Veri gizliliği için loglar şirket içi yerel modelde (Ollama) analiz ediliyor. Model çökerse, sistem otomatik olarak bulut API'sine (Gemini) geçiş yapıyor (Fallback Mechanism).</p>
+                </div>
+            </section>
+
+            <!-- Slayt 7: Semantic RAG -->
+            <section data-transition="slide">
+                <h2>Anlamsal Arama (Semantic RAG)</h2>
+                <div class="full-box fragment fade-up">
+                    <strong style="color: #00d2ff; font-size: 1.2em;">Geleneksel kelime araması (LIKE) tarih oluyor!</strong>
+                    <p>PostgreSQL `pgvector` eklentisi kullanıldı. Loglar "Vektör Array"lere çevrildi.</p>
+                    <p>Kullanıcılar "Veritabanı neden koptu?" gibi doğal dille arama yaptığında, matematiksel olarak (Kosinüs Benzerliği) en alakalı geçmiş loglar ve AI çözümleri listeleniyor.</p>
+                </div>
+            </section>
+
+            <!-- Slayt 8: Süreç Akışı -->
+            <section data-transition="concave">
+                <h2>Sistem Nasıl Çalışır? (Özet Akış)</h2>
+                <ol style="margin-top: 30px; font-size: 0.9em; line-height: 2;">
+                    <li class="fragment fade-right">Sistemde bir hata (Exception) meydana gelir.</li>
+                    <li class="fragment fade-right">Yapay Zeka (Ollama/Gemini) saniyeler içinde analiz edip çözüm üretir.</li>
+                    <li class="fragment fade-right">Metin Regex ile temizlenir, vektöre (768 boyutlu) çevrilip PostgreSQL'e kaydedilir.</li>
+                    <li class="fragment fade-right">Kritik bir hataysa anında Slack üzerinden ekibe bildirim düşer.</li>
+                    <li class="fragment fade-right">Kullanıcı arayüzden raporu inceler veya doğal dille RAG araması yapar.</li>
+                </ol>
+            </section>
+
+            <!-- Slayt 9: Sonuç ve Kazanımlar -->
+            <section data-transition="zoom">
+                <h2>Kazanımlar & Öğrenimler</h2>
+                <div class="full-box">
+                    <ul>
+                        <li class="fragment fade-up">Tam teşekküllü bir <span class="highlight">MVP'nin uçtan uca (Full-Stack)</span> tasarımı ve geliştirilmesi süreçlerinde pratik kazanıldı.</li>
+                        <li class="fragment fade-up">Yapay zekanın (LLM) sadece bir sohbet robotu değil, yazılım sistemlerinin <span class="highlight">çekirdeğine (Applied AI)</span> nasıl entegre edilebileceği öğrenildi.</li>
+                        <li class="fragment fade-up">Vektör veritabanları (Vector DB) ve RAG gibi piyasanın en modern teknolojileri projeye başarıyla uyarlandı.</li>
+                    </ul>
+                </div>
+                <h3 class="fragment fade-in" style="margin-top: 40px; color: #ffaa00;">Dinlediğiniz İçin Teşekkür Ederim!</h3>
+                <p class="fragment fade-in" style="font-weight: bold; margin-top: 20px;">Hatice Nur Filizoğlu <br><small style="font-weight: normal; color:#00d2ff;">Lastgen Software - 2026</small></p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            controls: true,
+            progress: true,
+            center: true,
+            slideNumber: 'c/t',
+            width: 960,
+            height: 700,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 function Navbar() {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { language, setLanguage, t } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [notifGranted, setNotifGranted] = useState(() => 'Notification' in window && Notification.permission === 'granted');

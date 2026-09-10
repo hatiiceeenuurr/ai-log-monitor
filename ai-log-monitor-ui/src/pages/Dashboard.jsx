@@ -8,7 +8,7 @@ import { exportLogsToCSV } from "../utils/exportUtils";
 import { requestNotificationPermission, sendDesktopNotification } from "../utils/notificationUtils";
 import { useTranslation } from "react-i18next";
 function Dashboard() {
-    const { t } = useLanguage();
+
     const [data, setData] = useState({
         totalLogs: 0,
         criticalCount: 0,

@@ -56,14 +56,7 @@ public class LogAnalysis {
     @Column
     private Priority priority;
 
-    @OneToMany(
-            mappedBy = "logAnalysis",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    @JsonIgnore
-    private List<LogAnalysisTranslation> translations = new ArrayList<>();
+
 
     public LogAnalysis() {
     }
@@ -168,11 +161,5 @@ public class LogAnalysis {
         this.priority = priority;
     }
 
-    public List<LogAnalysisTranslation> getTranslations() {
-        return translations;
-    }
 
-    public void setTranslations(List<LogAnalysisTranslation> translations) {
-        this.translations = translations;
-    }
 }

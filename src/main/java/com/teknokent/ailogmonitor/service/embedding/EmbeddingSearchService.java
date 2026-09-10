@@ -23,22 +23,42 @@ public class EmbeddingSearchService {
     private final EmbeddingService embeddingService;
     private final EntityManager entityManager;
     private final LogNormalizer logNormalizer;
+    private final com.teknokent.ailogmonitor.service.ai.AIProvider aiProvider;
 
     public EmbeddingSearchService(
             EmbeddingService embeddingService,
             EntityManager entityManager,
-            LogNormalizer logNormalizer) {
+            LogNormalizer logNormalizer,
+            com.teknokent.ailogmonitor.service.ai.AIProvider aiProvider) {
 
         this.embeddingService = embeddingService;
         this.entityManager = entityManager;
         this.logNormalizer = logNormalizer;
+        this.aiProvider = aiProvider;
     }
 
     public List<SimilarLogResult> findSimilarLogs(String currentLog) {
 
-        String normalizedQuery = (logNormalizer != null && currentLog != null)
-                ? logNormalizer.normalize(currentLog)
-                : currentLog;
+        String englishQuery = currentLog;
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            String url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" + java.net.URLEncoder.encode(currentLog, java.nio.charset.StandardCharsets.UTF_8);
+            String response = restTemplate.getForObject(url, String.class);
+            if (response != null && response.startsWith("[[[")) {
+                // Parse the deeply nested JSON array [[["translated text", "original text", ...
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(response);
+                englishQuery = rootNode.get(0).get(0).get(0).asText();
+            }
+        } catch (Exception e) {
+            log.warn("Google Translate API failed, falling back to original query. Error: {}", e.getMessage());
+        }
+        
+        log.info("Original Query: '{}' -> English Query: '{}'", currentLog, englishQuery);
+
+        String normalizedQuery = (logNormalizer != null && englishQuery != null)
+                ? logNormalizer.normalize(englishQuery.trim())
+                : englishQuery;
 
         List<Float> embedding = embeddingService.createEmbedding(normalizedQuery);
         if (embedding == null || embedding.isEmpty()) {
@@ -104,7 +124,6 @@ public class EmbeddingSearchService {
                             distance
                     )
             );
-
             if (results.size() == 5) {
                 break;
             }

@@ -19,10 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.teknokent.ailogmonitor.dto.LogAnalysisResponse;
-import com.teknokent.ailogmonitor.entity.Language;
-import com.teknokent.ailogmonitor.entity.LogAnalysisTranslation;
-import com.teknokent.ailogmonitor.service.translation.TranslationService;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +39,7 @@ public class ReportService {
     private final LogNormalizer logNormalizer;
     private final EntityManager entityManager;
     private final AIResponseParser aiResponseParser;
-    private final TranslationService translationService;
+
 
     public ReportService(LogAnalysisRepository repository,
                          LogEmbeddingRepository logEmbeddingRepository,
@@ -52,8 +49,7 @@ public class ReportService {
                          NotificationService notificationService,
                          LogNormalizer logNormalizer,
                          EntityManager entityManager,
-                         AIResponseParser aiResponseParser,
-                         TranslationService translationService) {
+                         AIResponseParser aiResponseParser) {
 
         this.repository = repository;
         this.logEmbeddingRepository = logEmbeddingRepository;
@@ -64,7 +60,7 @@ public class ReportService {
         this.logNormalizer = logNormalizer;
         this.entityManager = entityManager;
         this.aiResponseParser = aiResponseParser;
-        this.translationService = translationService;
+
     }
 
 
@@ -246,37 +242,5 @@ public class ReportService {
         String hash = logNormalizer.generateHash(normalized);
         return repository.existsByNormalizedHash(hash);
     }
-    public List<LogAnalysisResponse> getAllLogs(Language language) {
 
-        return repository.findAllByOrderByAnalyzedAtDesc()
-                .stream()
-                .map(log -> {
-
-                    LogAnalysisTranslation translation =
-                            translationService.getOrCreateTranslation(
-                                    log,
-                                    language
-                            );
-
-                    LogAnalysisResponse response =
-                            new LogAnalysisResponse();
-
-                    response.setId(log.getId());
-                    response.setLogContent(log.getLogContent());
-                    response.setSeverity(log.getSeverity());
-
-                    response.setProblem(translation.getProblem());
-                    response.setCause(translation.getCause());
-                    response.setSolution(translation.getSolution());
-
-                    response.setPriority(log.getPriority());
-                    response.setOccurrenceCount(log.getOccurrenceCount());
-                    response.setAnalyzedAt(log.getAnalyzedAt());
-                    response.setLastSeenAt(log.getLastSeenAt());
-
-                    return response;
-
-                })
-                .toList();
-    }
 }

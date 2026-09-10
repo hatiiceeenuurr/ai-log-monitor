@@ -39,6 +39,7 @@ function App() {
             </Routes>
           </BrowserRouter>
         </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
   );
 }
